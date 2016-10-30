@@ -4,4 +4,10 @@ version = "0.1.0"
 authors = ["Raphaël Lustin <raphael@lustin.fr>"]
 
 [dependencies]
+diesel = "0.8.0"
+diesel_codegen = { version = "0.8.0", features = ["sqlite"] }
+dotenv = "0.8.0"
 iron = "*"
+router = "*"
+rustc-serialize = "*"
+staticfile = "*"
