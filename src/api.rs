@@ -8,17 +8,13 @@ use diesel::prelude::*;
 use rustc_serialize::json;
 use database;
 
-pub fn index(request: &mut Request) -> IronResult<Response> {
-    println!("Started GET \"/api\" for {}", request.remote_addr);
-
+pub fn index(_: &mut Request) -> IronResult<Response> {
     Ok(Response::with((status::Ok, "Welcome to Lugh API!")))
 }
 
-pub fn translations(request: &mut Request) -> IronResult<Response> {
+pub fn translations(_: &mut Request) -> IronResult<Response> {
     use schema::translations::dsl::*;
     use models::*;
-
-    println!("Started GET \"/api/translations\" for {}", request.remote_addr);
 
     let connection = database::establish_connection();
     let results = translations.load::<Translation>(&connection)

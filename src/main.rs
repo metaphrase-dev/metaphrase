@@ -6,6 +6,7 @@ extern crate iron;
 extern crate staticfile;
 extern crate router;
 extern crate rustc_serialize;
+extern crate time;
 
 use iron::prelude::*;
 use staticfile::Static;
@@ -15,6 +16,7 @@ use std::path::Path;
 mod api;
 mod database;
 mod schema;
+mod logger;
 mod models;
 
 fn main() {
@@ -24,5 +26,9 @@ fn main() {
     router.get("/api", api::index, "api");
     router.get("/api/translations", api::translations, "translations");
 
-    Iron::new(router).http("localhost:3000").unwrap();
+    let mut chain = Chain::new(router);
+    chain.link_before(logger::RequestLogger);
+    chain.link_after(logger::RequestLogger);
+
+    Iron::new(chain).http("localhost:3000").unwrap();
 }
