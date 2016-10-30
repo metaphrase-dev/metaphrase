@@ -15,6 +15,7 @@ use router::Router;
 use std::path::Path;
 
 mod api;
+mod database;
 mod schema;
 mod models;
 
