@@ -1,6 +1,7 @@
 extern crate iron;
 extern crate rustc_serialize;
 
+use iron::headers::ContentType;
 use iron::prelude::*;
 use iron::status;
 use diesel::prelude::*;
@@ -27,5 +28,5 @@ pub fn translations(request: &mut Request) -> IronResult<Response> {
 
     let payload = json::encode(&results).unwrap();
 
-    Ok(Response::with((status::Ok, payload)))
+    Ok(Response::with((ContentType::json().0, status::Ok, payload)))
 }
