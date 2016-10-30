@@ -13,10 +13,11 @@ impl BeforeMiddleware for RequestLogger {
     fn before(&self, request: &mut Request) -> IronResult<()> {
         request.extensions.insert::<RequestLogger>(precise_time_ns());
         println!(
-            "Started {} \"{}\" for {}",
+            "Started {} \"{}\" for {} at {}",
             request.method,
             format!("/{}", request.url.path().join("/")),
-            request.remote_addr
+            request.remote_addr,
+            time::now().strftime("%+").unwrap()
         );
 
         Ok(())
