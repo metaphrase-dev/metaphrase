@@ -1,4 +1,27 @@
 database.sqlite
 /target/
+/src/frontend/node_modules/
 .env
+
+# Numerous always-ignore extensions
+*.diff
+*.err
+*.orig
+*.log
+*.rej
+*.swo
 *.swp
+*.vi
+*~
+*.sass-cache
+*.map
+
+# OS or Editor folders
+.DS_Store
+.cache
+.project
+.settings
+.tmproj
+nbproject
+Thumbs.db
+
