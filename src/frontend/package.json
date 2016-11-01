@@ -15,11 +15,18 @@
   "devDependencies": {
     "auto-reload-brunch": "^2.0.0",
     "babel-brunch": "~6.0.0",
+    "babel-plugin-transform-runtime": "^6.15.0",
     "babel-preset-es2015": "~6.3.13",
     "brunch": "^2.4.0",
     "clean-css-brunch": "^2.0.0",
     "css-brunch": "^2.0.0",
+    "font-awesome": "^4.7.0",
     "javascript-brunch": "^2.0.0",
-    "uglify-js-brunch": "^2.0.0"
+    "lodash": "^4.16.6",
+    "uglify-js-brunch": "^2.0.0",
+    "vue": "^2.0.3",
+    "vue-brunch": "^1.2.3",
+    "vueify-insert-css": "^1.0.0",
+    "whatwg-fetch": "^1.0.0"
   }
 }

@@ -1,0 +1,15 @@
+.translation-key {
+  padding: 10px;
+  font-weight: bold;
+  font-size: 10pt;
+  border-bottom: 1px solid grey;
+  background-color: #ececec;
+}
+
+.translation-crumb {
+  display: inline-block;
+}
+
+.translation-crumb-separator span {
+  font-size: 0;
+}
