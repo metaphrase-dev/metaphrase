@@ -9,6 +9,7 @@ diesel_codegen = { version = "0.8.0", features = ["sqlite"] }
 dotenv = "0.8.0"
 iron = "*"
 router = "*"
+mount = "*"
 rustc-serialize = "*"
 staticfile = "*"
 time = "0.1.35"

@@ -1,0 +1,1 @@
+{"version":3,"sources":["app/main.css"],"names":[],"mappings":"AAAA;AACA;AACA;AACA;AACA;AACA;AACA;AACA;AACA;AACA;AACA","file":"public/app.css","sourcesContent":["body {\n  font-family: sans-serif;\n  background-color: lightgrey;\n}\n\nh1 {\n  margin-top: 100px;\n  text-align: center;\n  color: grey;\n}\n"]}
