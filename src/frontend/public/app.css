@@ -1,12 +1,142 @@
 body {
-  font-family: sans-serif;
-  background-color: lightgrey;
+  font-family: -apple-system, BlinkMacSystemFont,
+    "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans",
+    "Droid Sans", "Helvetica Neue", sans-serif;
+  margin: 0;
+  padding: 0;
 }
 
-h1 {
-  margin-top: 100px;
-  text-align: center;
-  color: grey;
+* {
+  box-sizing: border-box;
+}
+
+#main {
+  height: 100vh;
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
+
+  display: flex;
+  background-color: #eeeeee;
+}
+
+#workspace {
+  flex: 1 1 300px;
+  display: flex;
+  background-color: #d5d8de;
+}
+
+#navigation-bar {
+  width: 260px;
+  background-color: #e6eaef;
+  border-right: 1px solid #777777;
+}
+
+#translation-list {
+  flex: 1 1 100px;
+}
+
+.nav-translation-key-list {
+  padding: 0;
+  margin: 0;
+}
+
+.nav-translation-key {
+  display: flex;
+  margin-left: 0;
+  font-size: 10pt;
+}
+
+.nav-translation-key:nth-child(2n) a {
+  background-color: #eff2f5;
+}
+
+.nav-translation-key a {
+  flex: 1 1 0;
+  padding: 5px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.nav-translation-key a:hover,
+.nav-translation-key a:focus,
+.nav-translation-key a:active {
+  background-color: white;
+}
+
+.nav-translation-key .fa-chevron-right {
+  float: right;
+  margin-top: 3px;
+}
+
+#toolbar {
+  background-color: #3f4757;
+  color: white;
+  border-bottom: 1px solid black;
+}
+
+#toolbar h1 {
+  font-size: 12pt;
+  margin-left: 10px;
+}
+
+.translation-group {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  border-bottom: 1px solid black;
+}
+
+.translation {
+  background-color: white;
+  display: flex;
+  align-items: top;
+}
+
+.translation:nth-child(2n),
+.translation:nth-child(2n) textarea {
+  background-color: #f2f6fb;
+}
+
+.translation-locale {
+  width: 70px;
+  text-align: right;
+  padding-right: 10px;
+  vertical-align: center;
+  font-size: 9pt;
+  font-weight: bold;
+  line-height: 1.8;
+  margin-top: 5px;
+  font-family: monospace;
+}
+
+.translation textarea {
+  flex: 1 0 100px;
+  border-width: 0 0 0 1px;
+  border-color: #e0e0e0;
+  padding: 5px;
+  min-height: 55px;
+  font-family: inherit;
+}
+
+.translation-key {
+  padding: 10px;
+  font-weight: bold;
+  font-size: 10pt;
+  border-bottom: 1px solid grey;
+  background-color: #ececec;
+}
+
+.translation-crumb {
+  display: inline-block;
+}
+
+.translation-crumb-separator span {
+  font-size: 0;
 }
 
 

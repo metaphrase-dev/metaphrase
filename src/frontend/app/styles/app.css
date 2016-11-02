@@ -1,0 +1,28 @@
+#main {
+  height: 100vh;
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
+
+  display: flex;
+  background-color: #eeeeee;
+}
+
+#workspace {
+  flex: 1 1 300px;
+  display: flex;
+  background-color: #d5d8de;
+}
+
+#navigation-bar {
+  width: 260px;
+  background-color: #e6eaef;
+  border-right: 1px solid #777777;
+}
+
+#translation-list {
+  flex: 1 1 100px;
+}

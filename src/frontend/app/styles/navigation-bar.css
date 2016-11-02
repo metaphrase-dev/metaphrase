@@ -1,0 +1,32 @@
+.nav-translation-key-list {
+  padding: 0;
+  margin: 0;
+}
+
+.nav-translation-key {
+  display: flex;
+  margin-left: 0;
+  font-size: 10pt;
+}
+
+.nav-translation-key:nth-child(2n) a {
+  background-color: #eff2f5;
+}
+
+.nav-translation-key a {
+  flex: 1 1 0;
+  padding: 5px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.nav-translation-key a:hover,
+.nav-translation-key a:focus,
+.nav-translation-key a:active {
+  background-color: white;
+}
+
+.nav-translation-key .fa-chevron-right {
+  float: right;
+  margin-top: 3px;
+}

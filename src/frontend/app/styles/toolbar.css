@@ -1,0 +1,10 @@
+#toolbar {
+  background-color: #3f4757;
+  color: white;
+  border-bottom: 1px solid black;
+}
+
+#toolbar h1 {
+  font-size: 12pt;
+  margin-left: 10px;
+}
