@@ -3,7 +3,7 @@ pub struct Translation {
     pub id: i32,
     pub key: String,
     pub locale: String,
-    pub content: String,
+    pub content: Option<String>,
 }
 
 Queryable! {
@@ -11,6 +11,6 @@ Queryable! {
         pub id: i32,
         pub key: String,
         pub locale: String,
-        pub content: String,
+        pub content: Option<String>,
     }
 }
