@@ -7,7 +7,6 @@
   justify-content: center;
   align-items: stretch;
 
-  display: flex;
   background-color: #eeeeee;
 }
 
@@ -15,14 +14,10 @@
   flex: 1 1 300px;
   display: flex;
   background-color: #d5d8de;
-}
-
-#navigation-bar {
-  width: 260px;
-  background-color: #e6eaef;
-  border-right: 1px solid #777777;
+  overflow: hidden;
 }
 
 #translation-list {
   flex: 1 1 100px;
+  overflow-y: auto;
 }

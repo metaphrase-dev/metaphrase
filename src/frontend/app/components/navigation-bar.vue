@@ -4,7 +4,7 @@
       <li v-for="key in translationKeys" class="nav-translation-key">
         <a href="#" @click.prevent>
           <i class="fa fa-fw fa-file-o"></i>
-          {{ key }}
+          <span>{{ key }}</span>
           <i class="fa fa-fw fa-chevron-right"></i>
         </a>
       </li>

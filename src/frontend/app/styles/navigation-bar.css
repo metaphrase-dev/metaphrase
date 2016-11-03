@@ -1,10 +1,19 @@
+#navigation-bar {
+  display: flex;
+  width: 260px;
+  background-color: #e6eaef;
+  border-right: 1px solid #777777;
+}
+
 .nav-translation-key-list {
+  flex: 1;
   padding: 0;
   margin: 0;
+  overflow-y: auto;
 }
 
 .nav-translation-key {
-  display: flex;
+  display: block;
   margin-left: 0;
   font-size: 10pt;
 }
@@ -14,10 +23,21 @@
 }
 
 .nav-translation-key a {
-  flex: 1 1 0;
+  display: flex;
   padding: 5px;
   color: inherit;
   text-decoration: none;
+  min-width: 0;
+  align-items: center;
+}
+
+.nav-translation-key span {
+  margin-left: 5px;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .nav-translation-key a:hover,
@@ -26,7 +46,5 @@
   background-color: white;
 }
 
-.nav-translation-key .fa-chevron-right {
-  float: right;
-  margin-top: 3px;
+.nav-translation-key i {
 }
