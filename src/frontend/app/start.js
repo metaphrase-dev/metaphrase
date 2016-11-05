@@ -25,5 +25,5 @@ window.vue = new Vue({
 fetch("/api/translations")
   .then(response => response.json())
   .then(data => {
-    store.groupedTranslations = _.groupBy(data, 'key');
+    store.groupedTranslations = data;
   });
