@@ -2,7 +2,7 @@
 pub struct TranslationForLocale {
     pub id: i32,
     pub locale: String,
-    pub content: String,
+    pub content: Option<String>,
 }
 
 pub struct Translation {
