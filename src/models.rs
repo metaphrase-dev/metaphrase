@@ -3,6 +3,7 @@ pub struct TranslationForLocale {
     pub id: i32,
     pub locale: String,
     pub content: Option<String>,
+    pub timestamp: String,
 }
 
 pub struct Translation {
@@ -10,6 +11,7 @@ pub struct Translation {
     pub key: String,
     pub locale: String,
     pub content: Option<String>,
+    pub timestamp: String,
 }
 
 Queryable! {
@@ -18,5 +20,6 @@ Queryable! {
         pub key: String,
         pub locale: String,
         pub content: Option<String>,
+        pub timestamp: String,
     }
 }

@@ -19,7 +19,12 @@ pub fn translations(_: &mut Request) -> IronResult<Response> {
     use std::collections::HashMap;
 
     let connection = database::establish_connection();
-    let results = translations.filter(sql("id IN (SELECT MAX(id) FROM translations GROUP BY key, locale)"))
+    let results = translations.filter(
+            sql("(key, locale, timestamp) IN (
+                    SELECT key, locale, MAX(timestamp)
+                    FROM translations
+                    GROUP BY key, locale)")
+        )
         .load::<Translation>(&connection)
         .expect("Error loading translations");
 
@@ -34,7 +39,8 @@ pub fn translations(_: &mut Request) -> IronResult<Response> {
           TranslationForLocale {
               id: translation.id,
               locale: translation.locale.clone(),
-              content: translation.content.clone()
+              content: translation.content.clone(),
+              timestamp: translation.timestamp.clone(),
           }
       );
     }
