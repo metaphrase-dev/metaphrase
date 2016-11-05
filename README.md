@@ -3,6 +3,8 @@
 *Lugh* is a copy (writings, translations, etc.) manager that you can host on
 your server or computer.
 
+[![Build Status](https://travis-ci.org/rlustin/lugh.svg?branch=master)](https://travis-ci.org/rlustin/lugh)
+
 ## Install
 
 To make sure you don't run into trouble, make sure you have both `npm` and

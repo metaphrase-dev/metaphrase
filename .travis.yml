@@ -1,0 +1,16 @@
+language: rust
+rust:
+  - nightly
+addons:
+  apt:
+    packages:
+      - libsqlite3-dev
+env:
+  global:
+    - DATABASE_URL=test-database.sqlite
+    - PATH="/home/travis/.cargo/bin:$PATH"
+before_script:
+  - cargo install diesel_cli
+script:
+  - make migratedb
+  - cargo build
