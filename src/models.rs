@@ -1,4 +1,10 @@
 #[derive(RustcEncodable)]
+pub struct TranslationForLocale {
+    pub id: i32,
+    pub locale: String,
+    pub content: String,
+}
+
 pub struct Translation {
     pub id: i32,
     pub key: String,

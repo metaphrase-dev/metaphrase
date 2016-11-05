@@ -16,15 +16,32 @@ pub fn translations(_: &mut Request) -> IronResult<Response> {
     use diesel::expression::dsl::sql;
     use models::*;
     use schema::translations::dsl::*;
+    use std::collections::HashMap;
 
     let connection = database::establish_connection();
     let results = translations.filter(sql("id IN (SELECT MAX(id) FROM translations GROUP BY key, locale)"))
         .load::<Translation>(&connection)
         .expect("Error loading translations");
 
-    println!("Returns {} translations", results.len());
+    let mut all_translations = HashMap::new();
 
-    let payload = json::encode(&results).unwrap();
+    for translation in &results {
+      let mut translations_for_key = all_translations.entry(&translation.key)
+          .or_insert(HashMap::<String, TranslationForLocale>::new());
+
+      translations_for_key.insert(
+          translation.locale.clone(),
+          TranslationForLocale {
+              id: translation.id,
+              locale: translation.locale.clone(),
+              content: translation.content.clone()
+          }
+      );
+    }
+
+    println!("Returns {} translations", all_translations.len());
+
+    let payload = json::encode(&all_translations).unwrap();
 
     Ok(Response::with((ContentType::json().0, status::Ok, payload)))
 }

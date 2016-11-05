@@ -18,7 +18,7 @@
     name: 'translation-group',
 
     props: {
-      translations: Array,
+      translations: Object,
       translationKey: String
     },
 
