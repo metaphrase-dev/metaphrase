@@ -2,7 +2,7 @@ CREATE TABLE translations (
   id INTEGER PRIMARY KEY NOT NULL,
   key TEXT NOT NULL,
   locale TEXT NOT NULL,
-  content TEXT NOT NULL
+  content TEXT
 );
 
 INSERT INTO translations VALUES (1, "ui.add", "fr", "ajouter");

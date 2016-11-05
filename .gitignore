@@ -1,6 +1,7 @@
 database.sqlite
 /target/
 /src/frontend/node_modules/
+/src/frontend/public/
 .env
 
 # Numerous always-ignore extensions
