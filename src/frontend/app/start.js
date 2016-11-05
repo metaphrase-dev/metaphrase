@@ -4,7 +4,8 @@ import _ from 'lodash';
 import "whatwg-fetch";
 
 var store = {
-  groupedTranslations: []
+  groupedTranslations: [],
+  namespace: window.location.hash.substring(1),
 };
 
 window.vue = new Vue({
@@ -27,3 +28,7 @@ fetch("/api/translations")
   .then(data => {
     store.groupedTranslations = data;
   });
+
+window.onhashchange = function() {
+  store.namespace = window.location.hash.substring(1);
+}
