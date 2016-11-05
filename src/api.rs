@@ -13,11 +13,13 @@ pub fn index(_: &mut Request) -> IronResult<Response> {
 }
 
 pub fn translations(_: &mut Request) -> IronResult<Response> {
-    use schema::translations::dsl::*;
+    use diesel::expression::dsl::sql;
     use models::*;
+    use schema::translations::dsl::*;
 
     let connection = database::establish_connection();
-    let results = translations.load::<Translation>(&connection)
+    let results = translations.filter(sql("id IN (SELECT MAX(id) FROM translations GROUP BY key, locale)"))
+        .load::<Translation>(&connection)
         .expect("Error loading translations");
 
     println!("Returns {} translations", results.len());
