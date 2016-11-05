@@ -5,9 +5,9 @@ CREATE TABLE translations (
   content TEXT
 );
 
-INSERT INTO translations VALUES (1, "ui.add", "fr", "ajouter");
-INSERT INTO translations VALUES (2, "ui.add", "de", "hinzufügen");
-INSERT INTO translations VALUES (3, "ui.add", "en", "add");
-INSERT INTO translations VALUES (4, "ui.add", "es", "añadir");
-INSERT INTO translations VALUES (5, "ui.add", "it", "aggiungi");
-INSERT INTO translations VALUES (6, "ui.add", "ru", "добавить");
+INSERT INTO translations (key, locale, content) VALUES ("ui.add", "fr", "ajouter");
+INSERT INTO translations (key, locale, content) VALUES ("ui.add", "de", "hinzufügen");
+INSERT INTO translations (key, locale, content) VALUES ("ui.add", "en", "add");
+INSERT INTO translations (key, locale, content) VALUES ("ui.add", "es", "añadir");
+INSERT INTO translations (key, locale, content) VALUES ("ui.add", "it", "aggiungi");
+INSERT INTO translations (key, locale, content) VALUES ("ui.add", "ru", "добавить");
