@@ -6,6 +6,7 @@ extern crate iron;
 extern crate staticfile;
 extern crate router;
 extern crate mount;
+extern crate params;
 extern crate rustc_serialize;
 extern crate time;
 
@@ -24,7 +25,8 @@ mod models;
 fn main() {
     let mut router = Router::new();
     router.get("/", api::index, "api");
-    router.get("/translations", api::translations, "translations");
+    router.get("/translations", api::translations_index, "translations_index");
+    router.post("/translations", api::translations_create, "translations_create");
 
     let mut mount = Mount::new();
     mount.mount("/", Static::new(Path::new("src/frontend/public/")));
