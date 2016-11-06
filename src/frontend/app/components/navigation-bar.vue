@@ -5,18 +5,25 @@
       <i class="fa fa-fw fa-search" />
     </div>
     <ul class="nav-translation-key-list">
-      <li v-for="key in filteredTranslationsKeys" class="nav-translation-key">
-        <a href="#" @click.prevent>
-          <i class="fa fa-fw fa-file-o"></i>
-          <span>{{ key }}</span>
-          <i class="fa fa-fw fa-chevron-right"></i>
+      <li v-if="needle.length == 0 && namespace.length > 0" class="nav-translation-key nav-back">
+        <a href="#" @click.prevent="goToParentNamespace(namespace)">
+          <i class="fa fa-fw fa-chevron-left"></i>
+          <span><b>{{namespace}}</b></span>
         </a>
       </li>
+      <template v-for="key in filteredTranslationsKeys">
+        <navigation-key
+          :canonicalKey="key"
+          :namespace="namespace"
+          :forceCanonical="needle.length > 0"
+          @namespaceChanged="setNamespace(...arguments)" />
+      </template>
     </ul>
   </div>
 </template>
 
 <script>
+  import NavigationKey from "./navigation-key.vue";
   import _ from "lodash";
 
   export default ({
@@ -29,15 +36,61 @@
     },
 
     props: {
-      translationKeys: Array
+      translationKeys: Array,
+      namespace: String
     },
 
     computed: {
       filteredTranslationsKeys() {
+        if (this.$data.needle != "") {
+          return this.foundTranslationKeys;
+        } else {
+          return this.currentNamespaceTranslationKeys;
+        }
+      },
+
+      currentNamespaceTranslationKeys() {
+        let currentKeys = _.filter(this.translationKeys, (key) => {
+          return key.startsWith(this.namespace || "");
+        });
+
+        let truncated = _.map(currentKeys, (key) => {
+          let namespaceDepth = 0;
+          if (this.namespace.length > 0) {
+            namespaceDepth = (this.namespace.match(/\./g) || []).length + 1;
+          }
+          let keyWithoutNamespace = key.split('.').slice(namespaceDepth).join('.');
+          let crumbs = keyWithoutNamespace.split('.');
+          let initialDot = this.namespace.length > 0 ? '.' : '';
+
+          if (crumbs.length > 1) {
+            return this.namespace + initialDot + crumbs[0] + '..';
+          } else {
+            return this.namespace + initialDot + keyWithoutNamespace;
+          }
+        });
+
+        return _.uniq(truncated).sort();
+      },
+
+      foundTranslationKeys() {
         return _.filter(this.translationKeys, (key) => {
           return key.includes(this.$data.needle);
-        });
+        }).sort();
       }
+    },
+
+    methods: {
+      setNamespace(namespace) {
+        this.$emit('namespaceChanged', namespace);
+      },
+      goToParentNamespace(namespace) {
+        this.$emit('namespaceChanged', namespace.split('.').slice(0, -1).join('.'));
+      }
+    },
+
+    components: {
+      navigationKey: NavigationKey
     }
   });
 </script>

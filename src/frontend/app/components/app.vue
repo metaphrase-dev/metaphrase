@@ -2,12 +2,15 @@
   <div id="main">
     <toolbar />
     <div id="workspace">
-      <navigation-bar :translation-keys="translationKeys" />
+      <navigation-bar
+        :translation-keys="translationKeys"
+        :namespace="relevantNamespace"
+        @namespaceChanged="updateNamespace" />
       <div id="translation-list">
         <translation-group
-          v-for="(translations, key) in store.groupedTranslations"
+          v-for="key in filteredTranslationKeys"
           :translation-key="key"
-          :translations="translations" />
+          :translations="store.groupedTranslations[key]" />
       </div>
     </div>
   </div>
@@ -29,6 +32,29 @@
     computed: {
       translationKeys() {
         return _.keys(this.store.groupedTranslations);
+      },
+
+      filteredTranslationKeys() {
+        // FIXME: Implement paging instead of limiting to 50st first keys
+
+        return _.filter(this.translationKeys, (key) => {
+          return _.startsWith(key, this.store.namespace);
+        }).sort().slice(0, 50);
+      },
+
+      relevantNamespace() {
+        let keysCount = this.filteredTranslationKeys.length;
+        let namespace = this.store.namespace;
+
+        if (keysCount === 1 && this.filteredTranslationKeys[0] == namespace) {
+          if (namespace.includes('.')) {
+            return namespace.split('.').slice(0, -1).join('.');
+          } else {
+            return '';
+          }
+        } else {
+          return namespace;
+        }
       }
     },
 
@@ -36,6 +62,12 @@
       toolbar: Toolbar,
       translationGroup: TranslationGroup,
       navigationBar: NavigationBar
+    },
+
+    methods: {
+      updateNamespace(namespace) {
+        window.location.hash = namespace;
+      }
     }
   });
 </script>
