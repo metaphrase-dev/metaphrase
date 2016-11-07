@@ -20,8 +20,8 @@ pub fn translations_index(_: &mut Request) -> IronResult<Response> {
 
     let connection = database::establish_connection();
     let results = translations.filter(
-            sql("(key, locale, timestamp) IN (
-                    SELECT key, locale, MAX(timestamp)
+            sql("(key, locale, created_at) IN (
+                    SELECT key, locale, MAX(created_at)
                     FROM translations
                     GROUP BY key, locale)")
         )
@@ -40,7 +40,7 @@ pub fn translations_index(_: &mut Request) -> IronResult<Response> {
               id: translation.id,
               locale: translation.locale.clone(),
               content: translation.content.clone(),
-              timestamp: translation.timestamp.clone(),
+              created_at: translation.created_at.clone(),
           }
       );
     }
