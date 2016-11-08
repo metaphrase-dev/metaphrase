@@ -4,6 +4,7 @@
     <div class="translation" v-for="translation in translations"
       :t-id="translation.id">
       <div class="translation-locale">
+        <flag :locale="translation.locale" />
         {{ translation.locale }}
       </div>
       <textarea>{{ translation.content }}</textarea>
@@ -13,6 +14,7 @@
 
 <script>
   import TranslationKey from "./translation-key.vue";
+  import Flag from "./flag.vue";
 
   export default ({
     name: 'translation-group',
@@ -23,7 +25,8 @@
     },
 
     components: {
-      translationKey: TranslationKey
+      translationKey: TranslationKey,
+      flag: Flag
     }
   });
 </script>

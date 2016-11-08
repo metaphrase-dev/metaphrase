@@ -21,6 +21,7 @@
     "clean-css-brunch": "^2.0.0",
     "copycat-brunch": "github:cmelgarejo/copycat-brunch",
     "css-brunch": "^2.0.0",
+    "flag-icon-css": "^2.8.0",
     "font-awesome": "^4.7.0",
     "javascript-brunch": "^2.0.0",
     "lodash": "^4.16.6",
