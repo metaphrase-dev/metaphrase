@@ -24,13 +24,13 @@ mod models;
 
 fn main() {
     let mut router = Router::new();
-    router.get("/", api::index, "api");
-    router.get("/translations", api::translations_index, "translations_index");
-    router.post("/translations", api::translations_create, "translations_create");
+    router.get("/", api::v1::index, "api");
+    router.get("/translations", api::v1::translations_index, "translations_index");
+    router.post("/translations", api::v1::translations_create, "translations_create");
 
     let mut mount = Mount::new();
     mount.mount("/", Static::new(Path::new("src/frontend/public/")));
-    mount.mount("/api/", router);
+    mount.mount("/api/v1", router);
 
     let mut chain = Chain::new(mount);
     chain.link_before(logger::RequestLogger);

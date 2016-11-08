@@ -20,7 +20,7 @@ pub struct TranslationForLocale {
     pub id: i32,
     pub locale: String,
     pub content: Option<String>,
-    pub timestamp: String,
+    pub created_at: String,
 }
 
 #[derive(RustcEncodable)]
@@ -29,7 +29,7 @@ pub struct Translation {
     pub key: String,
     pub locale: String,
     pub content: Option<String>,
-    pub timestamp: String,
+    pub created_at: String,
 }
 
 Queryable! {
@@ -38,6 +38,6 @@ Queryable! {
         pub key: String,
         pub locale: String,
         pub content: Option<String>,
-        pub timestamp: String,
+        pub created_at: String,
     }
 }
