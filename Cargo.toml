@@ -14,3 +14,8 @@ mount = "*"
 rustc-serialize = "*"
 staticfile = "*"
 time = "0.1.35"
+
+[dev-dependencies]
+dotenv = "0.8.0"
+hyper = "*"
+rustc-serialize = "*"

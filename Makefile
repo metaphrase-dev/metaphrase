@@ -13,3 +13,6 @@ build:
 
 run: build
 	cargo run
+
+test:
+	tools/test.sh
