@@ -20,10 +20,10 @@ pub fn translations_index(_: &mut Request) -> IronResult<Response> {
 
     let connection = database::establish_connection();
     let results = translations.filter(
-            sql("(key, locale, created_at) IN (
-                    SELECT key, locale, MAX(created_at)
-                    FROM translations
-                    GROUP BY key, locale)")
+            sql("key || locale || created_at IN (
+                  SELECT key || locale || MAX(created_at)
+                  FROM translations
+                  GROUP BY key, locale)")
         )
         .load::<Translation>(&connection)
         .expect("Error loading translations");
