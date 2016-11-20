@@ -23,6 +23,7 @@ pub fn translations_index(_: &mut Request) -> IronResult<Response> {
             sql("key || locale || created_at IN (
                   SELECT key || locale || MAX(created_at)
                   FROM translations
+                  WHERE deleted_at IS NULL
                   GROUP BY key, locale)")
         )
         .load::<Translation>(&connection)

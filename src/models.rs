@@ -30,6 +30,7 @@ pub struct Translation {
     pub locale: String,
     pub content: Option<String>,
     pub created_at: String,
+    pub deleted_at: Option<String>,
 }
 
 Queryable! {
@@ -39,5 +40,6 @@ Queryable! {
         pub locale: String,
         pub content: Option<String>,
         pub created_at: String,
+        pub deleted_at: Option<String>,
     }
 }
