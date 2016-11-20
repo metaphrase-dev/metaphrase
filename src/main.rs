@@ -10,10 +10,12 @@ extern crate params;
 extern crate rustc_serialize;
 extern crate time;
 
+use dotenv::dotenv;
 use iron::prelude::*;
 use staticfile::Static;
 use router::Router;
 use mount::Mount;
+use std::env;
 use std::path::Path;
 
 mod api;
@@ -23,6 +25,8 @@ mod logger;
 mod models;
 
 fn main() {
+    dotenv().ok();
+
     let mut router = Router::new();
     router.get("/", api::v1::index, "api");
     router.get("/translations", api::v1::translations_index, "translations_index");
@@ -36,5 +40,9 @@ fn main() {
     chain.link_before(logger::RequestLogger);
     chain.link_after(logger::RequestLogger);
 
-    Iron::new(chain).http("localhost:3000").unwrap();
+    let bind = env::var("LUGH_BIND").unwrap_or("localhost:3000".to_string());
+    println!("Start application on {}", bind);
+
+    Iron::new(chain).http(bind.as_str())
+        .expect("Can’t start application");
 }

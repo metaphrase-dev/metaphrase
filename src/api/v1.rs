@@ -20,10 +20,10 @@ pub fn translations_index(_: &mut Request) -> IronResult<Response> {
 
     let connection = database::establish_connection();
     let results = translations.filter(
-            sql("(key, locale, created_at) IN (
-                    SELECT key, locale, MAX(created_at)
-                    FROM translations
-                    GROUP BY key, locale)")
+            sql("key || locale || created_at IN (
+                  SELECT key || locale || MAX(created_at)
+                  FROM translations
+                  GROUP BY key, locale)")
         )
         .load::<Translation>(&connection)
         .expect("Error loading translations");
@@ -32,10 +32,9 @@ pub fn translations_index(_: &mut Request) -> IronResult<Response> {
 
     for translation in &results {
       let mut translations_for_key = all_translations.entry(&translation.key)
-          .or_insert(HashMap::<String, TranslationForLocale>::new());
+          .or_insert(Vec::<TranslationForLocale>::new());
 
-      translations_for_key.insert(
-          translation.locale.clone(),
+      translations_for_key.push(
           TranslationForLocale {
               id: translation.id,
               locale: translation.locale.clone(),

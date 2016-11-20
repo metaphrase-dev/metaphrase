@@ -1,8 +1,5 @@
 install:
-	curl -sSf https://static.rust-lang.org/rustup.sh | sh -s -- --channel=nightly
-	cargo install diesel_cli
-	sudo apt install libsqlite3-dev
-	sudo npm install -g brunch
+	tools/install.sh
 
 migratedb:
 	diesel migration run
@@ -13,3 +10,6 @@ build:
 
 run: build
 	cargo run
+
+test:
+	tools/test.sh

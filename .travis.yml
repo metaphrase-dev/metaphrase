@@ -4,13 +4,14 @@ rust:
 addons:
   apt:
     packages:
+      - sqlite3
       - libsqlite3-dev
 env:
   global:
-    - DATABASE_URL=test-database.sqlite
+    - DATABASE_URL=/home/travis/lugh-test-database.sqlite
+    - LUGH_BIND=localhost:3000
     - PATH="/home/travis/.cargo/bin:$PATH"
 before_script:
   - cargo install diesel_cli
 script:
-  - make migratedb
-  - cargo build
+  - make test
