@@ -20,6 +20,7 @@ use std::path::Path;
 
 mod api;
 mod database;
+mod errors;
 mod schema;
 mod logger;
 mod models;
@@ -31,6 +32,7 @@ fn main() {
     router.get("/", api::v1::index, "api");
     router.get("/translations", api::v1::translations_index, "translations_index");
     router.post("/translations", api::v1::translations_create, "translations_create");
+    router.delete("/translations", api::v1::translations_delete, "translations_delete");
 
     let mut mount = Mount::new();
     mount.mount("/", Static::new(Path::new("src/frontend/public/")));

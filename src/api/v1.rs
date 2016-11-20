@@ -6,6 +6,7 @@ use iron::prelude::*;
 use iron::status;
 use diesel::expression::dsl::sql;
 use diesel::prelude::*;
+use errors::*;
 use models::*;
 use rustc_serialize::json;
 use schema::translations::dsl::*;
@@ -96,4 +97,29 @@ pub fn translations_create(request: &mut Request) -> IronResult<Response> {
     let payload = json::encode(&inserted_translation).unwrap();
 
     Ok(Response::with((ContentType::json().0, status::Created, payload)))
+}
+
+pub fn translations_delete(request: &mut Request) -> IronResult<Response> {
+    use diesel;
+    use params::{Params, Value};
+    use time;
+
+    let parameters = request.get_ref::<Params>().unwrap();
+
+    let key_to_delete = match parameters.find(&["key"]) {
+        Some(&Value::String(ref key_to_delete)) => key_to_delete,
+        _ => return Err(IronError::new(StringError("You must provide a key to delete"), status::BadRequest)),
+    };
+
+    let connection = database::establish_connection();
+
+    let now = time::strftime("%F %T", &time::now_utc()).unwrap();
+
+    diesel::update(translations.filter(key.eq(key_to_delete))
+                   .filter(deleted_at.is_null()))
+        .set(deleted_at.eq(now))
+        .execute(&connection)
+        .expect(&format!("Unable to delete translations with key={}", key_to_delete));
+
+    Ok(Response::with((ContentType::json().0, status::NoContent)))
 }
