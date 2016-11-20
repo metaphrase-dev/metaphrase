@@ -32,10 +32,9 @@ pub fn translations_index(_: &mut Request) -> IronResult<Response> {
 
     for translation in &results {
       let mut translations_for_key = all_translations.entry(&translation.key)
-          .or_insert(HashMap::<String, TranslationForLocale>::new());
+          .or_insert(Vec::<TranslationForLocale>::new());
 
-      translations_for_key.insert(
-          translation.locale.clone(),
+      translations_for_key.push(
           TranslationForLocale {
               id: translation.id,
               locale: translation.locale.clone(),
