@@ -4,8 +4,8 @@ version = "0.1.0"
 authors = ["Raphaël Lustin <raphael@lustin.fr>"]
 
 [dependencies]
-diesel = "0.8.0"
-diesel_codegen = { version = "0.8.0", features = ["sqlite"] }
+diesel = { git = "https://github.com/diesel-rs/diesel", features = ["sqlite"], branch = "sg-bump-nightly" }
+diesel_codegen = { git = "https://github.com/diesel-rs/diesel", features = ["sqlite"], branch = "sg-bump-nightly" }
 dotenv = "0.8.0"
 iron = "*"
 params = "0.5.0"
