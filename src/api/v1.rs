@@ -62,17 +62,17 @@ pub fn translations_create(request: &mut Request) -> IronResult<Response> {
 
     let new_key = match parameters.find(&["key"]) {
         Some(&Value::String(ref new_key)) => new_key,
-        _ => panic!("Unexpected parameter type for key!"),
+        _ => return bad_request_error("You must provide a key"),
     };
 
     let new_locale = match parameters.find(&["locale"]) {
         Some(&Value::String(ref new_locale)) => new_locale,
-        _ => panic!("Unexpected parameter type for locale!"),
+        _ => return bad_request_error("You must provide a locale"),
     };
 
     let new_content = match parameters.find(&["content"]) {
         Some(&Value::String(ref new_content)) => new_content,
-        _ => panic!("Unexpected parameter type for content!"),
+        _ => return bad_request_error("You must provide a content"),
     };
 
     let new_translation = NewTranslation {
@@ -108,7 +108,7 @@ pub fn translations_delete(request: &mut Request) -> IronResult<Response> {
 
     let key_to_delete = match parameters.find(&["key"]) {
         Some(&Value::String(ref key_to_delete)) => key_to_delete,
-        _ => return Err(IronError::new(StringError("You must provide a key to delete"), status::BadRequest)),
+        _ => return bad_request_error("You must provide a key to delete"),
     };
 
     let connection = database::establish_connection();
@@ -122,4 +122,8 @@ pub fn translations_delete(request: &mut Request) -> IronResult<Response> {
         .expect(&format!("Unable to delete translations with key={}", key_to_delete));
 
     Ok(Response::with((ContentType::json().0, status::NoContent)))
+}
+
+fn bad_request_error(message: &'static str) -> Result<Response, IronError> {
+    Err(IronError::new(StringError(message), status::BadRequest))
 }
