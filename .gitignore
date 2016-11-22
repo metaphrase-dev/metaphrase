@@ -1,4 +1,4 @@
-database.sqlite
+*.sqlite
 /target/
 /src/frontend/node_modules/
 /src/frontend/public/
