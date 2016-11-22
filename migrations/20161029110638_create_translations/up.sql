@@ -3,7 +3,8 @@ CREATE TABLE translations (
   key TEXT NOT NULL,
   locale TEXT NOT NULL,
   content TEXT,
-  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  deleted_at TEXT DEFAULT NULL
 );
 
 INSERT INTO translations (key, locale, content) VALUES ("ui.add", "fr", "ajouter");
