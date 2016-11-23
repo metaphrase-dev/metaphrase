@@ -20,6 +20,7 @@ Configuration is made in `.env` file:
 
 ```
 DATABASE_URL=database.sqlite
+LUGH_BIND=127.0.0.1:3000
 ```
 
 ## Migrate database
@@ -55,3 +56,13 @@ $ brunch watch
 Brunch will take care of downloading all what is necessary to run the frontend
 and build everything, then watch for your changes to build it to the
 `src/frontend/public` folder where the Rust part will serve it.
+
+## Tests
+
+So that you do not conflict with the development, use these environment variables:
+```
+TEST_DATABASE_URL=test-database.sqlite
+TEST_LUGH_BIND=127.0.0.1:3100
+```
+
+You can run the tests with `make test`.

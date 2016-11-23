@@ -8,8 +8,8 @@ addons:
       - libsqlite3-dev
 env:
   global:
-    - DATABASE_URL=/home/travis/lugh-test-database.sqlite
-    - LUGH_BIND=localhost:3000
+    - TEST_DATABASE_URL=/home/travis/lugh-test-database.sqlite
+    - TEST_LUGH_BIND=localhost:3000
     - PATH="/home/travis/.cargo/bin:$PATH"
 before_script:
   - cargo install diesel_cli
