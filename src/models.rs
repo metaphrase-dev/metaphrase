@@ -1,4 +1,4 @@
-use schema::translations;
+use schema::*;
 
 pub struct NewTranslation {
     pub key: String,
@@ -41,5 +41,23 @@ Queryable! {
         pub content: Option<String>,
         pub created_at: String,
         pub deleted_at: Option<String>,
+    }
+}
+
+pub struct User {
+    pub id: i32,
+    pub email: String,
+    pub hashed_password: String,
+    pub created_at: String,
+
+}
+
+Queryable! {
+    pub struct User {
+        pub id: i32,
+        pub email: String,
+        pub hashed_password: String,
+        pub created_at: String,
+
     }
 }

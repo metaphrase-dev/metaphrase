@@ -8,3 +8,12 @@ table! {
         deleted_at -> Nullable<Text>,
     }
 }
+
+table! {
+    users {
+        id -> Integer,
+        email -> Text,
+        hashed_password -> Text,
+        created_at -> Text,
+    }
+}
