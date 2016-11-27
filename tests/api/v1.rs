@@ -12,9 +12,9 @@ mod tests {
 
     #[derive(RustcEncodable)]
     struct NewTranslation {
-        key: &'static str,
-        locale: &'static str,
-        content: &'static str,
+        key: Option<&'static str>,
+        locale: Option<&'static str>,
+        content: Option<&'static str>,
     }
 
     #[allow(dead_code)]
@@ -35,6 +35,45 @@ mod tests {
     }
 
     #[test]
+    fn test_create_without_key() {
+        let new_translation = NewTranslation {
+            key: None,
+            locale: Some("en"),
+            content: Some("I love train"),
+        };
+
+        let (response, _) = post_translation(new_translation);
+
+        assert_eq!(StatusCode::BadRequest, response.status);
+    }
+
+    #[test]
+    fn test_create_without_locale() {
+        let new_translation = NewTranslation {
+            key: Some("test.i_love_train"),
+            locale: None,
+            content: Some("I love train"),
+        };
+
+        let (response, _) = post_translation(new_translation);
+
+        assert_eq!(StatusCode::BadRequest, response.status);
+    }
+
+    #[test]
+    fn test_create_without_content() {
+        let new_translation = NewTranslation {
+            key: Some("test.i_love_train"),
+            locale: Some("en"),
+            content: None,
+        };
+
+        let (response, _) = post_translation(new_translation);
+
+        assert_eq!(StatusCode::BadRequest, response.status);
+    }
+
+    #[test]
     fn test_insert_and_delete() {
         // We fetch all translations
         let (response, content) = get("/api/v1/translations");
@@ -49,9 +88,9 @@ mod tests {
         // We create new translations on key `test.hello`
         let (response, _) = post_translation(
             NewTranslation {
-                key: "test.hello",
-                locale: "fr",
-                content: "Bonjour"
+                key: Some("test.hello"),
+                locale: Some("fr"),
+                content: Some("Bonjour"),
             }
         );
 
@@ -59,9 +98,9 @@ mod tests {
 
         let (response, _) = post_translation(
             NewTranslation {
-                key: "test.hello",
-                locale: "en",
-                content: "Hello"
+                key: Some("test.hello"),
+                locale: Some("en"),
+                content: Some("Hello"),
             }
         );
 
