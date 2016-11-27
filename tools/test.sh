@@ -2,6 +2,7 @@
 
 function teardown {
   kill -SIGTERM $LUGH_PID
+  rm $TEST_DATABASE_URL
 }
 
 function teardown_on_error {
@@ -13,13 +14,15 @@ trap teardown_on_error ERR
 
 cargo build
 
-diesel setup
+DATABASE_URL=$TEST_DATABASE_URL diesel setup
 
-LUGH_BIND=127.0.0.1:3100 target/debug/lugh &
+sqlite3 $TEST_DATABASE_URL ".read tests/fixtures.sql"
+
+DATABASE_URL=$TEST_DATABASE_URL LUGH_BIND=$TEST_LUGH_BIND target/debug/lugh &
 
 LUGH_PID=$!
 
-LUGH_BIND=127.0.0.1:3100 cargo test
+DATABASE_URL=$TEST_DATABASE_URL LUGH_BIND=$TEST_LUGH_BIND cargo test
 
 teardown
 
