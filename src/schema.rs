@@ -1,4 +1,14 @@
 table! {
+    sessions {
+        id -> Integer,
+        token -> Text,
+        user_id -> Integer,
+        created_at -> Text,
+        expired_at -> Text,
+    }
+}
+
+table! {
     translations {
         id -> Integer,
         key -> Text,

@@ -15,6 +15,24 @@ Insertable! {
     }
 }
 
+pub struct Session {
+    pub id: i32,
+    pub token: String,
+    pub user_id: i32,
+    pub created_at: String,
+    pub expired_at: String,
+}
+
+Queryable! {
+    pub struct Session {
+        pub id: i32,
+        pub token: String,
+        pub user_id: i32,
+        pub created_at: String,
+        pub expired_at: String,
+    }
+}
+
 #[derive(RustcEncodable)]
 pub struct TranslationForLocale {
     pub id: i32,
