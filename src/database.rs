@@ -1,14 +1,16 @@
 use diesel::prelude::*;
 use diesel::sqlite::SqliteConnection;
 use dotenv::dotenv;
+use errors::StringError;
 use std::env;
 
-pub fn establish_connection() -> SqliteConnection {
+pub fn establish_connection() -> Result<SqliteConnection, StringError> {
     dotenv().ok();
 
     let database_url = env::var("DATABASE_URL")
         .expect("DATABASE_URL must be set");
 
-    SqliteConnection::establish(&database_url)
-        .expect(&format!("Error connecting to {}", database_url))
+    let connection = try!(SqliteConnection::establish(&database_url));
+
+    Ok(connection)
 }

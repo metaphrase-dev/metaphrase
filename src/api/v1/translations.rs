@@ -13,7 +13,7 @@ use super::common::*;
 pub fn index(_: &mut Request) -> IronResult<Response> {
     use std::collections::HashMap;
 
-    let connection = database::establish_connection();
+    let connection = try!(database::establish_connection());
     let results = translations.filter(
             sql("key || locale || created_at IN (
                   SELECT key || locale || MAX(created_at)
@@ -61,7 +61,7 @@ pub fn create(request: &mut Request) -> IronResult<Response> {
         content: new_content,
     };
 
-    let connection = database::establish_connection();
+    let connection = try!(database::establish_connection());
 
     diesel::insert(&new_translation)
         .into(translations::table)
@@ -85,7 +85,7 @@ pub fn delete(request: &mut Request) -> IronResult<Response> {
 
     let key_to_delete = try!(get_param(request, "key"));
 
-    let connection = database::establish_connection();
+    let connection = try!(database::establish_connection());
 
     let now = time::strftime("%F %T", &time::now_utc()).unwrap();
 
