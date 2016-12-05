@@ -1,25 +1,19 @@
-extern crate iron;
-extern crate rustc_serialize;
-
 use iron::headers::ContentType;
 use iron::prelude::*;
 use iron::status;
 use diesel::expression::dsl::sql;
 use diesel::prelude::*;
-use errors::*;
 use models::*;
 use rustc_serialize::json;
 use schema::translations::dsl::*;
+
 use database;
+use super::common::*;
 
 pub fn index(_: &mut Request) -> IronResult<Response> {
-    Ok(Response::with((status::Ok, "Welcome to Lugh API!")))
-}
-
-pub fn translations_index(_: &mut Request) -> IronResult<Response> {
     use std::collections::HashMap;
 
-    let connection = database::establish_connection();
+    let connection = try!(database::establish_connection());
     let results = translations.filter(
             sql("key || locale || created_at IN (
                   SELECT key || locale || MAX(created_at)
@@ -53,35 +47,21 @@ pub fn translations_index(_: &mut Request) -> IronResult<Response> {
     Ok(Response::with((ContentType::json().0, status::Ok, payload)))
 }
 
-pub fn translations_create(request: &mut Request) -> IronResult<Response> {
+pub fn create(request: &mut Request) -> IronResult<Response> {
     use diesel;
-    use params::{Params, Value};
     use schema::translations;
 
-    let parameters = request.get_ref::<Params>().unwrap();
-
-    let new_key = match parameters.find(&["key"]) {
-        Some(&Value::String(ref new_key)) => new_key,
-        _ => return bad_request_error("You must provide a key"),
-    };
-
-    let new_locale = match parameters.find(&["locale"]) {
-        Some(&Value::String(ref new_locale)) => new_locale,
-        _ => return bad_request_error("You must provide a locale"),
-    };
-
-    let new_content = match parameters.find(&["content"]) {
-        Some(&Value::String(ref new_content)) => new_content,
-        _ => return bad_request_error("You must provide a content"),
-    };
+    let new_key = try!(get_param(request, "key"));
+    let new_locale = try!(get_param(request, "locale"));
+    let new_content = try!(get_param(request, "content"));
 
     let new_translation = NewTranslation {
-        key: new_key.to_string(),
-        locale: new_locale.to_string(),
-        content: new_content.to_string(),
+        key: new_key,
+        locale: new_locale,
+        content: new_content,
     };
 
-    let connection = database::establish_connection();
+    let connection = try!(database::establish_connection());
 
     diesel::insert(&new_translation)
         .into(translations::table)
@@ -99,31 +79,21 @@ pub fn translations_create(request: &mut Request) -> IronResult<Response> {
     Ok(Response::with((ContentType::json().0, status::Created, payload)))
 }
 
-pub fn translations_delete(request: &mut Request) -> IronResult<Response> {
+pub fn delete(request: &mut Request) -> IronResult<Response> {
     use diesel;
-    use params::{Params, Value};
     use time;
 
-    let parameters = request.get_ref::<Params>().unwrap();
+    let key_to_delete = try!(get_param(request, "key"));
 
-    let key_to_delete = match parameters.find(&["key"]) {
-        Some(&Value::String(ref key_to_delete)) => key_to_delete,
-        _ => return bad_request_error("You must provide a key to delete"),
-    };
-
-    let connection = database::establish_connection();
+    let connection = try!(database::establish_connection());
 
     let now = time::strftime("%F %T", &time::now_utc()).unwrap();
 
-    diesel::update(translations.filter(key.eq(key_to_delete))
+    diesel::update(translations.filter(key.eq(&key_to_delete))
                    .filter(deleted_at.is_null()))
         .set(deleted_at.eq(now))
         .execute(&connection)
-        .expect(&format!("Unable to delete translations with key={}", key_to_delete));
+        .expect(&format!("Unable to delete translations with key={}", &key_to_delete));
 
     Ok(Response::with((ContentType::json().0, status::NoContent)))
-}
-
-fn bad_request_error(message: &'static str) -> Result<Response, IronError> {
-    Err(IronError::new(StringError(message), status::BadRequest))
 }

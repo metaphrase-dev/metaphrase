@@ -30,9 +30,9 @@ fn main() {
 
     let mut router = Router::new();
     router.get("/", api::v1::index, "api");
-    router.get("/translations", api::v1::translations_index, "translations_index");
-    router.post("/translations", api::v1::translations_create, "translations_create");
-    router.delete("/translations", api::v1::translations_delete, "translations_delete");
+    router.get("/translations", api::v1::translations::index, "translations_index");
+    router.post("/translations", api::v1::translations::create, "translations_create");
+    router.delete("/translations", api::v1::translations::delete, "translations_delete");
 
     let mut mount = Mount::new();
     mount.mount("/", Static::new(Path::new("src/frontend/public/")));
