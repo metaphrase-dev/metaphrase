@@ -20,6 +20,7 @@ Configuration is made in `.env` file:
 
 ```
 DATABASE_URL=database.sqlite
+DATABASE_BUSY_TIMEOUT=250
 LUGH_BIND=127.0.0.1:3000
 ```
 
