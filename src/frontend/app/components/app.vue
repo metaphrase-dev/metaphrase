@@ -8,6 +8,7 @@
           :namespace="relevantNamespace"
           @namespaceChanged="updateNamespace" />
         <div id="translation-list">
+          <collection-toolbar />
           <translation-group
             v-for="key in filteredTranslationKeys"
             :translation-key="key"
@@ -22,6 +23,7 @@
 <script>
   import Toolbar from "./toolbar.vue";
   import TranslationGroup from "./translation-group.vue";
+  import CollectionToolbar from "./collection-toolbar.vue";
   import NavigationBar from "./navigation-bar.vue";
   import LoginPrompt from "./login-prompt.vue";
   import _ from "lodash";
@@ -76,7 +78,8 @@
       toolbar: Toolbar,
       translationGroup: TranslationGroup,
       navigationBar: NavigationBar,
-      loginPrompt: LoginPrompt
+      loginPrompt: LoginPrompt,
+      collectionToolbar: CollectionToolbar
     },
 
     methods: {
