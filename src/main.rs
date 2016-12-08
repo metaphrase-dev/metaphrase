@@ -3,11 +3,13 @@
 #[macro_use] extern crate diesel;
 extern crate dotenv;
 extern crate iron;
-extern crate staticfile;
-extern crate router;
 extern crate mount;
 extern crate params;
+extern crate pwhash;
+extern crate rand;
+extern crate router;
 extern crate rustc_serialize;
+extern crate staticfile;
 extern crate time;
 
 use dotenv::dotenv;
@@ -19,6 +21,7 @@ use std::env;
 use std::path::Path;
 
 mod api;
+mod authentication;
 mod database;
 mod errors;
 mod schema;
