@@ -37,9 +37,12 @@ fn main() {
     router.post("/translations", api::v1::translations::create, "translations_create");
     router.delete("/translations", api::v1::translations::delete, "translations_delete");
 
+    let mut api_chain = Chain::new(router);
+    api_chain.link_before(authentication::middleware::AuthenticationMiddleware);
+
     let mut mount = Mount::new();
     mount.mount("/", Static::new(Path::new("src/frontend/public/")));
-    mount.mount("/api/v1", router);
+    mount.mount("/api/v1", api_chain);
 
     let mut chain = Chain::new(mount);
     chain.link_before(logger::RequestLogger);

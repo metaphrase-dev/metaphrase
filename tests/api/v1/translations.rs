@@ -65,7 +65,7 @@ mod tests {
     #[test]
     fn test_insert_and_delete() {
         // We fetch all translations
-        let (response, content) = get("/api/v1/translations");
+        let (response, content) = get("/api/v1/translations", valid_token());
 
         assert_eq!(StatusCode::Ok, response.status);
 
@@ -96,7 +96,7 @@ mod tests {
         assert_eq!(StatusCode::Created, response.status);
 
         // We fetch all translations
-        let (response, content) = get("/api/v1/translations");
+        let (response, content) = get("/api/v1/translations", valid_token());
 
         assert_eq!(StatusCode::Ok, response.status);
 
@@ -112,7 +112,7 @@ mod tests {
         assert_eq!(StatusCode::NoContent, response.status);
 
         // We fetch all translations
-        let (response, content) = get("/api/v1/translations");
+        let (response, content) = get("/api/v1/translations", valid_token());
 
         assert_eq!(StatusCode::Ok, response.status);
 
@@ -124,7 +124,7 @@ mod tests {
 
     #[test]
     fn test_delete_without_key() {
-        let (response, _) = delete("/api/v1/translations", "{}".to_string());
+        let (response, _) = delete("/api/v1/translations", "{}".to_string(), valid_token());
 
         assert_eq!(StatusCode::BadRequest, response.status);
     }
@@ -135,7 +135,7 @@ mod tests {
 
         let body = json::encode(&Body { key: key_to_delete }).unwrap();
 
-        delete("/api/v1/translations", body)
+        delete("/api/v1/translations", body, valid_token())
     }
 
     fn parse_translations(ref content: &String) -> HashMap<String, Vec<TranslationForLocale>> {
@@ -145,6 +145,6 @@ mod tests {
     fn post_translation(translation: NewTranslation) -> (Response, String) {
         let body = json::encode(&translation).unwrap();
 
-        post("/api/v1/translations", body)
+        post("/api/v1/translations", body, valid_token())
     }
 }

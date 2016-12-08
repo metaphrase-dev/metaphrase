@@ -3,10 +3,10 @@ use hyper::client::Response;
 use hyper::header::Headers;
 use std::io::Read;
 
-pub fn delete(path: &'static str, body: String) -> (Response, String) {
+pub fn delete(path: &'static str, body: String, token: Option<String>) -> (Response, String) {
     let mut response = Client::new()
         .delete(&url(path))
-        .headers(application_json_headers())
+        .headers(headers(token))
         .body(&body)
         .send()
         .unwrap();
@@ -17,9 +17,10 @@ pub fn delete(path: &'static str, body: String) -> (Response, String) {
     (response, content)
 }
 
-pub fn get(path: &'static str) -> (Response, String) {
+pub fn get(path: &'static str, token: Option<String>) -> (Response, String) {
     let mut response = Client::new()
         .get(&url(path))
+        .headers(headers(token))
         .send()
         .unwrap();
 
@@ -29,10 +30,10 @@ pub fn get(path: &'static str) -> (Response, String) {
     (response, result)
 }
 
-pub fn post(path: &'static str, body: String) -> (Response, String) {
+pub fn post(path: &'static str, body: String, token: Option<String>) -> (Response, String) {
     let mut response = Client::new()
         .post(&url(path))
-        .headers(application_json_headers())
+        .headers(headers(token))
         .body(&body)
         .send()
         .unwrap();
@@ -43,11 +44,21 @@ pub fn post(path: &'static str, body: String) -> (Response, String) {
     (response, content)
 }
 
-fn application_json_headers() -> Headers {
-    use hyper::header::{Headers, ContentType};
+pub fn valid_token() -> Option<String> {
+    Some("goodtokenfortests".to_string())
+}
+
+fn headers(token: Option<String>) -> Headers {
+    use hyper::header::{Authorization, Bearer, ContentType, Headers};
     use hyper::mime::{Mime, TopLevel, SubLevel, Attr, Value};
 
     let mut headers = Headers::new();
+
+    match token {
+        Some(token) => headers.set(Authorization(Bearer { token: token })),
+        None => {},
+    };
+
     headers.set(
         ContentType(
             Mime(

@@ -9,7 +9,7 @@ mod tests {
 
     #[test]
     fn test_index() {
-        let (response, result) = get("/api/v1");
+        let (response, result) = get("/api/v1", valid_token());
 
         assert_eq!(response.status, StatusCode::Ok);
         assert_eq!(result, "Welcome to Lugh API!");
