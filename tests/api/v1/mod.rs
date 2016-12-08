@@ -1,4 +1,5 @@
 mod common;
+mod sessions;
 mod translations;
 
 #[cfg(test)]

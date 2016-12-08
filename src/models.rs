@@ -1,5 +1,21 @@
 use schema::*;
 
+#[derive(RustcEncodable)]
+pub struct NewSession {
+    pub token: String,
+    pub user_id: i32,
+    pub expired_at: String,
+}
+
+Insertable! {
+    (sessions)
+    pub struct NewSession {
+        pub token: String,
+        pub user_id: i32,
+        pub expired_at: String,
+    }
+}
+
 pub struct NewTranslation {
     pub key: String,
     pub locale: String,

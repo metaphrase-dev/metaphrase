@@ -33,6 +33,10 @@ fn main() {
 
     let mut router = Router::new();
     router.get("/", api::v1::index, "api");
+
+    router.post("/login", api::v1::sessions::login, "login");
+    router.post("/logout", api::v1::sessions::logout, "logout");
+
     router.get("/translations", api::v1::translations::index, "translations_index");
     router.post("/translations", api::v1::translations::create, "translations_create");
     router.delete("/translations", api::v1::translations::delete, "translations_delete");

@@ -2,6 +2,7 @@ use iron::prelude::*;
 use iron::status;
 
 pub mod common;
+pub mod sessions;
 pub mod translations;
 
 pub fn index(_: &mut Request) -> IronResult<Response> {
