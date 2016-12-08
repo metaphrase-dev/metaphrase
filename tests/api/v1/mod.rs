@@ -1,6 +1,7 @@
 mod common;
 mod sessions;
 mod translations;
+mod users;
 
 #[cfg(test)]
 mod tests {

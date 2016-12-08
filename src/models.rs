@@ -31,6 +31,19 @@ Insertable! {
     }
 }
 
+pub struct NewUser {
+    pub email: String,
+    pub hashed_password: String,
+}
+
+Insertable! {
+    (users)
+    pub struct NewUser {
+        pub email: String,
+        pub hashed_password: String,
+    }
+}
+
 pub struct Session {
     pub id: i32,
     pub token: String,

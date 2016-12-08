@@ -41,6 +41,8 @@ fn main() {
     router.post("/translations", api::v1::translations::create, "translations_create");
     router.delete("/translations", api::v1::translations::delete, "translations_delete");
 
+    router.post("/users", api::v1::users::create, "users_create");
+
     let mut api_chain = Chain::new(router);
     api_chain.link_before(authentication::middleware::AuthenticationMiddleware);
 
