@@ -68,6 +68,6 @@ mod tests {
     fn login(params: LoginParams) -> (Response, String) {
         let body = json::encode(&params).unwrap();
 
-        post("/api/v1/login", body, None)
+        post("/api/v1/login", Some(body), None)
     }
 }

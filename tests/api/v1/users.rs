@@ -19,7 +19,7 @@ mod tests {
             password: Some("p4ssw0rd"),
         };
 
-        let (response, _) = post_user(new_user);
+        let (response, _) = post_user(new_user, valid_token());
 
         assert_eq!(StatusCode::BadRequest, response.status);
     }
@@ -31,7 +31,7 @@ mod tests {
             password: None,
         };
 
-        let (response, _) = post_user(new_user);
+        let (response, _) = post_user(new_user, valid_token());
 
         assert_eq!(StatusCode::BadRequest, response.status);
     }
@@ -43,14 +43,14 @@ mod tests {
             password: Some("p4ssw0rd"),
         };
 
-        let (response, _) = post_user(new_user);
+        let (response, _) = post_user(new_user, valid_token());
 
         assert_eq!(StatusCode::Created, response.status);
     }
 
-    fn post_user(user: NewUser) -> (Response, String) {
+    fn post_user(user: NewUser, token: Option<String>) -> (Response, String) {
         let body = json::encode(&user).unwrap();
 
-        post("/api/v1/users", body, valid_token())
+        post("/api/v1/users", Some(body), token)
     }
 }

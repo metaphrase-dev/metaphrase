@@ -46,7 +46,7 @@ mod tests {
             content: Some("I love train"),
         };
 
-        let (response, _) = post_translation(new_translation);
+        let (response, _) = post_translation(new_translation, valid_token());
 
         assert_eq!(StatusCode::BadRequest, response.status);
     }
@@ -59,7 +59,7 @@ mod tests {
             content: Some("I love train"),
         };
 
-        let (response, _) = post_translation(new_translation);
+        let (response, _) = post_translation(new_translation, valid_token());
 
         assert_eq!(StatusCode::BadRequest, response.status);
     }
@@ -72,7 +72,7 @@ mod tests {
             content: None,
         };
 
-        let (response, _) = post_translation(new_translation);
+        let (response, _) = post_translation(new_translation, valid_token());
 
         assert_eq!(StatusCode::BadRequest, response.status);
     }
@@ -95,7 +95,8 @@ mod tests {
                 key: Some("test.hello"),
                 locale: Some("fr"),
                 content: Some("Bonjour"),
-            }
+            },
+            valid_token()
         );
 
         assert_eq!(StatusCode::Created, response.status);
@@ -105,7 +106,8 @@ mod tests {
                 key: Some("test.hello"),
                 locale: Some("en"),
                 content: Some("Hello"),
-            }
+            },
+            valid_token()
         );
 
         assert_eq!(StatusCode::Created, response.status);
@@ -169,9 +171,9 @@ mod tests {
         json::decode(&content).unwrap()
     }
 
-    fn post_translation(translation: NewTranslation) -> (Response, String) {
+    fn post_translation(translation: NewTranslation, token: Option<String>) -> (Response, String) {
         let body = json::encode(&translation).unwrap();
 
-        post("/api/v1/translations", body, valid_token())
+        post("/api/v1/translations", Some(body), token)
     }
 }
