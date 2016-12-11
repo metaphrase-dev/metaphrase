@@ -81,19 +81,34 @@ pub fn create(request: &mut Request) -> IronResult<Response> {
 
 pub fn delete(request: &mut Request) -> IronResult<Response> {
     use diesel;
+    use router::Router;
     use time;
 
-    let key_to_delete = try!(get_param(request, "key"));
+    let key_to_delete = request.extensions.get::<Router>().unwrap().find("key").unwrap();
 
     let connection = try!(database::establish_connection());
 
     let now = time::strftime("%F %T", &time::now_utc()).unwrap();
 
-    diesel::update(translations.filter(key.eq(&key_to_delete))
-                   .filter(deleted_at.is_null()))
+    let selected_translations = translations.filter(key.eq(&key_to_delete))
+        .filter(deleted_at.is_null());
+
+    let deleted = diesel::update(selected_translations)
         .set(deleted_at.eq(now))
         .execute(&connection)
         .expect(&format!("Unable to delete translations with key={}", &key_to_delete));
 
-    Ok(Response::with((ContentType::json().0, status::NoContent)))
+    #[derive(RustcEncodable)]
+    struct DeletedResult {
+        deleted_translations: usize,
+    };
+
+    let payload = json::encode(&DeletedResult { deleted_translations: deleted }).unwrap();
+
+    let status = match deleted {
+        0 => status::NotFound,
+        _ => status::Ok,
+    };
+
+    Ok(Response::with((ContentType::json().0, status, payload)))
 }

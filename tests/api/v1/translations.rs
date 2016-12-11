@@ -7,6 +7,11 @@ mod tests {
     use rustc_serialize::json;
     use std::collections::HashMap;
 
+    #[derive(RustcDecodable)]
+    struct DeletedResult {
+        deleted_translations: usize,
+    }
+
     #[derive(RustcEncodable)]
     struct NewTranslation {
         key: Option<&'static str>,
@@ -107,9 +112,11 @@ mod tests {
         assert_eq!(2, translations_2.get(&"test.hello".to_string()).unwrap().len());
 
         // We delete all translations with key equals to `test.hello`
-        let (response, _) = delete_translations("test.hello");
+        let (response, content) = delete("/api/v1/translations/test.hello", valid_token());
+        let result: DeletedResult = json::decode(&content).unwrap();
 
-        assert_eq!(StatusCode::NoContent, response.status);
+        assert_eq!(StatusCode::Ok, response.status);
+        assert_eq!(2, result.deleted_translations);
 
         // We fetch all translations
         let (response, content) = get("/api/v1/translations", valid_token());
@@ -123,19 +130,12 @@ mod tests {
     }
 
     #[test]
-    fn test_delete_without_key() {
-        let (response, _) = delete("/api/v1/translations", "{}".to_string(), valid_token());
+    fn test_delete_with_a_key_without_translations() {
+        let (response, content) = delete("/api/v1/translations/not.found.key", valid_token());
+        let result: DeletedResult = json::decode(&content).unwrap();
 
-        assert_eq!(StatusCode::BadRequest, response.status);
-    }
-
-    fn delete_translations(key_to_delete: &'static str) -> (Response, String) {
-        #[derive(RustcEncodable)]
-        struct Body { key: &'static str }
-
-        let body = json::encode(&Body { key: key_to_delete }).unwrap();
-
-        delete("/api/v1/translations", body, valid_token())
+        assert_eq!(StatusCode::NotFound, response.status);
+        assert_eq!(0, result.deleted_translations);
     }
 
     fn parse_translations(ref content: &String) -> HashMap<String, Vec<TranslationForLocale>> {

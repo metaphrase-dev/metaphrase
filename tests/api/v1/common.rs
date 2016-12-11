@@ -3,11 +3,10 @@ use hyper::client::Response;
 use hyper::header::Headers;
 use std::io::Read;
 
-pub fn delete(path: &'static str, body: String, token: Option<String>) -> (Response, String) {
+pub fn delete(path: &'static str, token: Option<String>) -> (Response, String) {
     let mut response = Client::new()
         .delete(&url(path))
         .headers(headers(token))
-        .body(&body)
         .send()
         .unwrap();
 
