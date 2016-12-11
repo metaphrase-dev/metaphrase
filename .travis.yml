@@ -1,4 +1,6 @@
+dist: trusty
 language: rust
+cache: cargo
 rust:
   - nightly
 addons:
@@ -13,6 +15,6 @@ env:
     - TEST_LUGH_BIND=localhost:3000
     - PATH="/home/travis/.cargo/bin:$PATH"
 before_script:
-  - cargo install diesel_cli
+  - cargo install diesel_cli --force
 script:
   - make test

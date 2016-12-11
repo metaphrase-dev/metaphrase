@@ -5,6 +5,7 @@ use iron::status;
 use std::error::Error;
 use std::fmt::{self, Debug};
 use std::string::FromUtf8Error;
+use time::ParseError;
 
 #[derive(Debug)]
 pub struct BadRequestError(pub String);
@@ -39,6 +40,12 @@ impl Error for StringError {
     fn description(&self) -> &str { &*self.0 }
 }
 
+impl PartialEq for StringError {
+    fn eq(&self, other: &StringError) -> bool {
+        self.description() == other.description()
+    }
+}
+
 impl From<DieselConnectionError> for StringError {
     fn from(_: DieselConnectionError) -> StringError {
         StringError("Database connection error")
@@ -54,6 +61,12 @@ impl From<DieselResultError> for StringError {
 impl From<FromUtf8Error> for StringError {
     fn from(_: FromUtf8Error) -> StringError {
         StringError("Error when parsing bytes to String")
+    }
+}
+
+impl From<ParseError> for StringError {
+    fn from(_: ParseError) -> StringError {
+        StringError("Time parse error")
     }
 }
 
