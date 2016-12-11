@@ -7,6 +7,11 @@ mod tests {
     use rustc_serialize::json;
     use std::collections::HashMap;
 
+    #[derive(RustcDecodable)]
+    struct DeletedResult {
+        deleted_translations: usize,
+    }
+
     #[derive(RustcEncodable)]
     struct NewTranslation {
         key: Option<&'static str>,
@@ -21,6 +26,16 @@ mod tests {
         locale: String,
         content: Option<String>,
         created_at: String,
+    }
+
+    #[derive(RustcDecodable)]
+    pub struct Translation {
+        pub id: i32,
+        pub key: String,
+        pub locale: String,
+        pub content: Option<String>,
+        pub created_at: String,
+        pub deleted_at: Option<String>,
     }
 
     #[test]
@@ -69,7 +84,7 @@ mod tests {
 
         assert_eq!(StatusCode::Ok, response.status);
 
-        let translations_1 = parse_translations(&content);
+        let translations_1 = parse_translations_by_locales(&content);
 
         assert_eq!(1, translations_1.len());
         assert_eq!(6, translations_1.get(&"ui.add".to_string()).unwrap().len());
@@ -100,45 +115,57 @@ mod tests {
 
         assert_eq!(StatusCode::Ok, response.status);
 
-        let translations_2 = parse_translations(&content);
+        let translations_2 = parse_translations_by_locales(&content);
 
         assert_eq!(2, translations_2.len());
         assert_eq!(6, translations_2.get(&"ui.add".to_string()).unwrap().len());
         assert_eq!(2, translations_2.get(&"test.hello".to_string()).unwrap().len());
 
         // We delete all translations with key equals to `test.hello`
-        let (response, _) = delete_translations("test.hello");
+        let (response, content) = delete("/api/v1/translations/test.hello", valid_token());
+        let result: DeletedResult = json::decode(&content).unwrap();
 
-        assert_eq!(StatusCode::NoContent, response.status);
+        assert_eq!(StatusCode::Ok, response.status);
+        assert_eq!(2, result.deleted_translations);
 
         // We fetch all translations
         let (response, content) = get("/api/v1/translations", valid_token());
 
         assert_eq!(StatusCode::Ok, response.status);
 
-        let translations_3 = parse_translations(&content);
+        let translations_3 = parse_translations_by_locales(&content);
 
         assert_eq!(1, translations_3.len());
         assert_eq!(6, translations_3.get(&"ui.add".to_string()).unwrap().len());
+
+        // We fetch all translations with key `test.hello`
+        let (response, content) = get("/api/v1/translations/test.hello", valid_token());
+
+        assert_eq!(StatusCode::Ok, response.status);
+
+        let translations_4 = parse_translations(&content);
+
+        assert_eq!(2, translations_4.len());
+        assert_eq!("test.hello", translations_4[0].key);
+        assert_eq!("test.hello", translations_4[1].key);
+        assert!(translations_4[0].deleted_at.is_some());
+        assert!(translations_4[1].deleted_at.is_some());
     }
 
     #[test]
-    fn test_delete_without_key() {
-        let (response, _) = delete("/api/v1/translations", "{}".to_string(), valid_token());
+    fn test_delete_with_a_key_without_translations() {
+        let (response, content) = delete("/api/v1/translations/not.found.key", valid_token());
+        let result: DeletedResult = json::decode(&content).unwrap();
 
-        assert_eq!(StatusCode::BadRequest, response.status);
+        assert_eq!(StatusCode::NotFound, response.status);
+        assert_eq!(0, result.deleted_translations);
     }
 
-    fn delete_translations(key_to_delete: &'static str) -> (Response, String) {
-        #[derive(RustcEncodable)]
-        struct Body { key: &'static str }
-
-        let body = json::encode(&Body { key: key_to_delete }).unwrap();
-
-        delete("/api/v1/translations", body, valid_token())
+    fn parse_translations_by_locales(ref content: &String) -> HashMap<String, Vec<TranslationForLocale>> {
+        json::decode(&content).unwrap()
     }
 
-    fn parse_translations(ref content: &String) -> HashMap<String, Vec<TranslationForLocale>> {
+    fn parse_translations(ref content: &String) -> Vec<Translation> {
         json::decode(&content).unwrap()
     }
 
