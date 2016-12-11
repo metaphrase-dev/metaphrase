@@ -15,7 +15,7 @@ pub fn authenticate_user(email: &String, password: &String) -> Result<(User, Ses
     Ok((user, session))
 }
 
-pub fn authenticate_token(auth_token: &String) -> Result<(), StringError> {
+pub fn authenticate_token(auth_token: &String) -> Result<Session, StringError> {
     use schema::sessions::dsl::*;
     use time;
 
@@ -26,7 +26,7 @@ pub fn authenticate_token(auth_token: &String) -> Result<(), StringError> {
             let session_expired_at = time::strptime(session.expired_at.as_str(), "%F %T").unwrap();
 
             if session_expired_at > time::now_utc() {
-                Ok(())
+                Ok(session)
             } else {
                 Err(StringError("Session expired"))
             }

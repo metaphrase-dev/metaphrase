@@ -1,3 +1,4 @@
+use iron::typemap;
 use schema::*;
 
 #[derive(RustcEncodable)]
@@ -61,6 +62,8 @@ Queryable! {
         pub expired_at: String,
     }
 }
+
+impl typemap::Key for Session { type Value = Session; }
 
 #[derive(RustcEncodable)]
 pub struct TranslationForLocale {
