@@ -76,6 +76,14 @@ mod tests {
         assert_eq!("", content);
     }
 
+    #[test]
+    fn test_logout_without_token() {
+        let (response, content) = post("/api/v1/logout", None, None);
+
+        assert_eq!(StatusCode::Unauthorized, response.status);
+        assert_eq!("", content);
+    }
+
     fn login(params: LoginParams) -> (Response, String) {
         let body = json::encode(&params).unwrap();
 

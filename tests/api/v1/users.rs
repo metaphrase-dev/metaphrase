@@ -13,6 +13,19 @@ mod tests {
     }
 
     #[test]
+    fn test_create_without_token() {
+        let new_user = NewUser {
+            email: Some("user@domain.com"),
+            password: Some("p4ssw0rd"),
+        };
+
+        let (response, content) = post_user(new_user, None);
+
+        assert_eq!(StatusCode::Unauthorized, response.status);
+        assert_eq!("", content);
+    }
+
+    #[test]
     fn test_create_without_email() {
         let new_user = NewUser {
             email: None,

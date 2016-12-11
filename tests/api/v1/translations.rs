@@ -39,6 +39,20 @@ mod tests {
     }
 
     #[test]
+    fn test_create_without_token() {
+        let new_translation = NewTranslation {
+            key: Some("test.i_love_train"),
+            locale: Some("en"),
+            content: Some("I love train"),
+        };
+
+        let (response, content) = post_translation(new_translation, None);
+
+        assert_eq!(StatusCode::Unauthorized, response.status);
+        assert_eq!("", content)
+    }
+
+    #[test]
     fn test_create_without_key() {
         let new_translation = NewTranslation {
             key: None,
@@ -152,6 +166,14 @@ mod tests {
         assert_eq!("test.hello", translations_4[1].key);
         assert!(translations_4[0].deleted_at.is_some());
         assert!(translations_4[1].deleted_at.is_some());
+    }
+
+    #[test]
+    fn test_delete_without_token() {
+        let (response, content) = delete("/api/v1/translations/hey.you", None);
+
+        assert_eq!(StatusCode::Unauthorized, response.status);
+        assert_eq!("", content);
     }
 
     #[test]
