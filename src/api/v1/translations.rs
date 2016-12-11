@@ -79,6 +79,24 @@ pub fn create(request: &mut Request) -> IronResult<Response> {
     Ok(Response::with((ContentType::json().0, status::Created, payload)))
 }
 
+pub fn show(request: &mut Request) -> IronResult<Response> {
+    use router::Router;
+
+    let ref translation_key = request.extensions.get::<Router>().unwrap().find("key").unwrap();
+
+    let connection = try!(database::establish_connection());
+
+    let all_translations = translations.filter(key.eq(translation_key))
+        .load::<Translation>(&connection)
+        .expect("Error loading translations");
+
+    println!("Returns {} translations", all_translations.len());
+
+    let payload = json::encode(&all_translations).unwrap();
+
+    Ok(Response::with((ContentType::json().0, status::Ok, payload)))
+}
+
 pub fn delete(request: &mut Request) -> IronResult<Response> {
     use diesel;
     use router::Router;
