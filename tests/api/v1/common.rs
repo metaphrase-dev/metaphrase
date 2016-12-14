@@ -29,13 +29,18 @@ pub fn get(path: &'static str, token: Option<String>) -> (Response, String) {
     (response, result)
 }
 
-pub fn post(path: &'static str, body: String, token: Option<String>) -> (Response, String) {
-    let mut response = Client::new()
-        .post(&url(path))
-        .headers(headers(token))
-        .body(&body)
-        .send()
-        .unwrap();
+pub fn post(path: &'static str, body: Option<String>, token: Option<String>) -> (Response, String) {
+    let client = Client::new();
+
+    let mut request = client.post(&url(path))
+        .headers(headers(token));
+
+    request = match body {
+        Some(ref body) => request.body(body),
+        None => request,
+    };
+
+    let mut response = request.send().unwrap();
 
     let mut content = String::new();
     response.read_to_string(&mut content).unwrap();

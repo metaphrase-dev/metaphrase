@@ -44,7 +44,7 @@ mod tests {
     }
 
     #[test]
-    fn test_login_with_success() {
+    fn test_login_then_logout_with_success() {
         use time;
 
         let login_params = LoginParams {
@@ -63,11 +63,30 @@ mod tests {
 
         let expired_at = time::strptime(session.expired_at.as_str(), "%F %T").unwrap();
         assert!(expired_at > time::now_utc());
+
+        let (response, content) = post("/api/v1/logout", None, Some(session.token.clone()));
+
+        assert_eq!(StatusCode::NoContent, response.status);
+        assert_eq!("", content);
+
+        // We check that we are disconnected
+        let (response, content) = post("/api/v1/logout", None, Some(session.token));
+
+        assert_eq!(StatusCode::Unauthorized, response.status);
+        assert_eq!("", content);
+    }
+
+    #[test]
+    fn test_logout_without_token() {
+        let (response, content) = post("/api/v1/logout", None, None);
+
+        assert_eq!(StatusCode::Unauthorized, response.status);
+        assert_eq!("", content);
     }
 
     fn login(params: LoginParams) -> (Response, String) {
         let body = json::encode(&params).unwrap();
 
-        post("/api/v1/login", body, None)
+        post("/api/v1/login", Some(body), None)
     }
 }

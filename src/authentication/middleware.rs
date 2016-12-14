@@ -8,11 +8,8 @@ use super::*;
 pub struct AuthenticationMiddleware;
 
 impl AuthenticationMiddleware {
-    fn authorize(&self, token: &String) -> bool {
-        match authenticate_token(token) {
-            Ok(_) => true,
-            Err(_) => false,
-        }
+    fn authorize(&self, token: &String) -> Result<Session, StringError> {
+        authenticate_token(token)
     }
 
     fn unauthorized_error(&self) -> Result<(), IronError> {
@@ -36,12 +33,16 @@ impl BeforeMiddleware for AuthenticationMiddleware {
 
         match request.headers.get::<Authorization<Bearer>>() {
             Some(&Authorization(Bearer { ref token })) => {
-                if self.authorize(token) {
-                    Ok(())
-                } else {
-                    self.unauthorized_error()
+                match self.authorize(token) {
+                    Ok(session) => {
+                        request.extensions.insert::<Session>(session);
+                        Ok(())
+                    },
+                    Err(_) => {
+                        self.unauthorized_error()
+                    },
                 }
-            }
+            },
             None => self.unauthorized_error()
         }
     }

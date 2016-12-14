@@ -39,6 +39,20 @@ mod tests {
     }
 
     #[test]
+    fn test_create_without_token() {
+        let new_translation = NewTranslation {
+            key: Some("test.i_love_train"),
+            locale: Some("en"),
+            content: Some("I love train"),
+        };
+
+        let (response, content) = post_translation(new_translation, None);
+
+        assert_eq!(StatusCode::Unauthorized, response.status);
+        assert_eq!("", content)
+    }
+
+    #[test]
     fn test_create_without_key() {
         let new_translation = NewTranslation {
             key: None,
@@ -46,7 +60,7 @@ mod tests {
             content: Some("I love train"),
         };
 
-        let (response, _) = post_translation(new_translation);
+        let (response, _) = post_translation(new_translation, valid_token());
 
         assert_eq!(StatusCode::BadRequest, response.status);
     }
@@ -59,7 +73,7 @@ mod tests {
             content: Some("I love train"),
         };
 
-        let (response, _) = post_translation(new_translation);
+        let (response, _) = post_translation(new_translation, valid_token());
 
         assert_eq!(StatusCode::BadRequest, response.status);
     }
@@ -72,7 +86,7 @@ mod tests {
             content: None,
         };
 
-        let (response, _) = post_translation(new_translation);
+        let (response, _) = post_translation(new_translation, valid_token());
 
         assert_eq!(StatusCode::BadRequest, response.status);
     }
@@ -95,7 +109,8 @@ mod tests {
                 key: Some("test.hello"),
                 locale: Some("fr"),
                 content: Some("Bonjour"),
-            }
+            },
+            valid_token()
         );
 
         assert_eq!(StatusCode::Created, response.status);
@@ -105,7 +120,8 @@ mod tests {
                 key: Some("test.hello"),
                 locale: Some("en"),
                 content: Some("Hello"),
-            }
+            },
+            valid_token()
         );
 
         assert_eq!(StatusCode::Created, response.status);
@@ -153,6 +169,14 @@ mod tests {
     }
 
     #[test]
+    fn test_delete_without_token() {
+        let (response, content) = delete("/api/v1/translations/hey.you", None);
+
+        assert_eq!(StatusCode::Unauthorized, response.status);
+        assert_eq!("", content);
+    }
+
+    #[test]
     fn test_delete_with_a_key_without_translations() {
         let (response, content) = delete("/api/v1/translations/not.found.key", valid_token());
         let result: DeletedResult = json::decode(&content).unwrap();
@@ -169,9 +193,9 @@ mod tests {
         json::decode(&content).unwrap()
     }
 
-    fn post_translation(translation: NewTranslation) -> (Response, String) {
+    fn post_translation(translation: NewTranslation, token: Option<String>) -> (Response, String) {
         let body = json::encode(&translation).unwrap();
 
-        post("/api/v1/translations", body, valid_token())
+        post("/api/v1/translations", Some(body), token)
     }
 }

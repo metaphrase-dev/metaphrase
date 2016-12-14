@@ -26,9 +26,11 @@ pub fn login(request: &mut Request) -> IronResult<Response> {
 }
 
 pub fn logout(request: &mut Request) -> IronResult<Response> {
-    let token_to_delete = try!(get_param(request, "token"));
+    use models::Session;
 
-    try!(delete_session(token_to_delete));
+    let current_session = request.extensions.get::<Session>().unwrap();
+
+    try!(delete_session(current_session.token.to_string()));
 
     Ok(Response::with((ContentType::json().0, status::NoContent)))
 }
