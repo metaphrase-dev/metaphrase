@@ -3,6 +3,8 @@ use iron::prelude::*;
 use iron::status;
 use diesel::expression::dsl::sql;
 use diesel::prelude::*;
+use diesel::sqlite::SqliteConnection;
+use errors::*;
 use models::*;
 use rustc_serialize::json;
 use schema::translations::dsl::*;
@@ -37,6 +39,8 @@ pub fn index(_: &mut Request) -> IronResult<Response> {
               content: translation.content.clone(),
               created_at: translation.created_at.clone(),
               user_id: translation.user_id,
+              validator_id: translation.validator_id,
+              validated_at: translation.validated_at.clone(),
           }
       );
     }
@@ -56,8 +60,7 @@ pub fn create(request: &mut Request) -> IronResult<Response> {
     let new_locale = try!(get_param(request, "locale"));
     let new_content = try!(get_param(request, "content"));
 
-    let current_session = request.extensions.get::<Session>().unwrap();
-    let user = try!(current_session.user());
+    let user = current_user(request)?;
 
     let new_translation = NewTranslation {
         key: new_key,
@@ -102,16 +105,47 @@ pub fn show(request: &mut Request) -> IronResult<Response> {
     Ok(Response::with((ContentType::json().0, status::Ok, payload)))
 }
 
+pub fn validate(request: &mut Request) -> IronResult<Response> {
+    use diesel;
+    use diesel::prelude::*;
+    use router::Router;
+    use schema::translations::dsl::*;
+
+    let translation_id: i32 = request.extensions
+        .get::<Router>().unwrap()
+        .find("id").unwrap()
+        .parse().unwrap();
+
+    let user = current_user(request)?;
+
+    let connection = database::establish_connection()?;
+    let mut translation = find_translation(&connection, translation_id)?;
+
+    translation.validator_id = Some(user.id);
+    translation.validated_at = Some(now_str()?);
+
+    let validated = diesel::update(translations.find(translation.id))
+        .set(&translation)
+        .execute(&connection)
+        .expect(&format!("Unable to validate translation with id={}", &translation_id));
+
+    let status = match validated {
+        1 => status::NoContent,
+        _ => status::InternalServerError,
+    };
+
+    Ok(Response::with((ContentType::json().0, status)))
+}
+
 pub fn delete(request: &mut Request) -> IronResult<Response> {
     use diesel;
     use router::Router;
-    use time;
 
     let key_to_delete = request.extensions.get::<Router>().unwrap().find("key").unwrap();
 
     let connection = try!(database::establish_connection());
 
-    let now = time::strftime("%F %T", &time::now_utc()).unwrap();
+    let now = now_str()?;
 
     let selected_translations = translations.filter(key.eq(&key_to_delete))
         .filter(deleted_at.is_null());
@@ -134,4 +168,14 @@ pub fn delete(request: &mut Request) -> IronResult<Response> {
     };
 
     Ok(Response::with((ContentType::json().0, status, payload)))
+}
+
+fn find_translation(connection: &SqliteConnection, translation_id: i32) -> Result<Translation, NotFoundError> {
+    use diesel::prelude::*;
+    use schema::translations::dsl::*;
+
+    match translations.find(translation_id).first::<Translation>(connection) {
+        Ok(translation) => Ok(translation),
+        Err(_) => Err(NotFoundError(format!("Can’t find Translation with id={}", translation_id))),
+    }
 }

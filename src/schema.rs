@@ -17,6 +17,8 @@ table! {
         created_at -> Text,
         deleted_at -> Nullable<Text>,
         user_id -> Nullable<Integer>,
+        validator_id -> Nullable<Integer>,
+        validated_at -> Nullable<Text>,
     }
 }
 

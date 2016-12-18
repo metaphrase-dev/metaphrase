@@ -39,6 +39,7 @@ fn main() {
 
     router.get("/translations", api::v1::translations::index, "translations_index");
     router.post("/translations", api::v1::translations::create, "translations_create");
+    router.post("/translations/:id/validate", api::v1::translations::validate, "translations_validate");
     router.get("/translations/:key", api::v1::translations::show, "translations_show");
     router.delete("/translations/:key", api::v1::translations::delete, "translations_delete");
 
