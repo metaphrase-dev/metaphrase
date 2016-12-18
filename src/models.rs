@@ -1,3 +1,4 @@
+use errors::*;
 use iron::typemap;
 use schema::*;
 
@@ -51,6 +52,21 @@ pub struct Session {
     pub user_id: i32,
     pub created_at: String,
     pub expired_at: String,
+}
+
+impl Session {
+    pub fn user(&self) -> Result<User, StringError> {
+        use database;
+        use diesel::prelude::*;
+        use schema::users::dsl::*;
+
+        let connection = try!(database::establish_connection());
+
+        match users.find(&self.user_id).first::<User>(&connection) {
+            Ok(user) => Ok(user),
+            Err(_) => Err(StringError("User not found for this Session")),
+        }
+    }
 }
 
 Queryable! {
@@ -109,5 +125,40 @@ Queryable! {
         pub hashed_password: String,
         pub created_at: String,
 
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_get_user_session_when_not_found() {
+        let result = session_for_user_id(999999).user();
+
+        assert!(result.is_err());
+        assert_eq!(StringError("User not found for this Session"), result.err().unwrap())
+    }
+
+    #[test]
+    fn test_get_user_session_when_success() {
+        let result = session_for_user_id(1).user();
+
+        assert_eq!(false, result.is_err());
+        assert_eq!("raphael@lustin.fr", result.unwrap().email)
+    }
+
+    fn session_for_user_id(user_id: i32) -> Session {
+        use time::{now_utc, strftime};
+
+        let now = strftime("%F %T", &now_utc()).unwrap();
+
+        Session {
+            id: 1,
+            token: "secret_token".to_string(),
+            user_id: user_id,
+            created_at: now.clone(),
+            expired_at: now,
+        }
     }
 }
