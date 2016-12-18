@@ -2,22 +2,16 @@ use errors::*;
 use iron::typemap;
 use schema::*;
 
-#[derive(RustcEncodable)]
+#[derive(Insertable, RustcEncodable)]
+#[table_name="sessions"]
 pub struct NewSession {
     pub token: String,
     pub user_id: i32,
     pub expired_at: String,
 }
 
-Insertable! {
-    (sessions)
-    pub struct NewSession {
-        pub token: String,
-        pub user_id: i32,
-        pub expired_at: String,
-    }
-}
-
+#[derive(Insertable)]
+#[table_name="translations"]
 pub struct NewTranslation {
     pub key: String,
     pub locale: String,
@@ -25,29 +19,14 @@ pub struct NewTranslation {
     pub user_id: i32,
 }
 
-Insertable! {
-    (translations)
-    pub struct NewTranslation {
-        pub key: String,
-        pub locale: String,
-        pub content: String,
-        pub user_id: i32,
-    }
-}
-
+#[derive(Insertable)]
+#[table_name="users"]
 pub struct NewUser {
     pub email: String,
     pub hashed_password: String,
 }
 
-Insertable! {
-    (users)
-    pub struct NewUser {
-        pub email: String,
-        pub hashed_password: String,
-    }
-}
-
+#[derive(Queryable)]
 pub struct Session {
     pub id: i32,
     pub token: String,
@@ -71,16 +50,6 @@ impl Session {
     }
 }
 
-Queryable! {
-    pub struct Session {
-        pub id: i32,
-        pub token: String,
-        pub user_id: i32,
-        pub created_at: String,
-        pub expired_at: String,
-    }
-}
-
 impl typemap::Key for Session { type Value = Session; }
 
 #[derive(RustcEncodable)]
@@ -92,7 +61,7 @@ pub struct TranslationForLocale {
     pub user_id: Option<i32>,
 }
 
-#[derive(RustcEncodable)]
+#[derive(Queryable, RustcEncodable)]
 pub struct Translation {
     pub id: i32,
     pub key: String,
@@ -103,34 +72,13 @@ pub struct Translation {
     pub user_id: Option<i32>,
 }
 
-Queryable! {
-    pub struct Translation {
-        pub id: i32,
-        pub key: String,
-        pub locale: String,
-        pub content: Option<String>,
-        pub created_at: String,
-        pub deleted_at: Option<String>,
-        pub user_id: Option<i32>,
-    }
-}
-
+#[derive(Queryable)]
 pub struct User {
     pub id: i32,
     pub email: String,
     pub hashed_password: String,
     pub created_at: String,
 
-}
-
-Queryable! {
-    pub struct User {
-        pub id: i32,
-        pub email: String,
-        pub hashed_password: String,
-        pub created_at: String,
-
-    }
 }
 
 #[cfg(test)]
