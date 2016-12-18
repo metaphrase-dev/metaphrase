@@ -22,6 +22,7 @@ pub struct NewTranslation {
     pub key: String,
     pub locale: String,
     pub content: String,
+    pub user_id: i32,
 }
 
 Insertable! {
@@ -30,6 +31,7 @@ Insertable! {
         pub key: String,
         pub locale: String,
         pub content: String,
+        pub user_id: i32,
     }
 }
 
@@ -87,6 +89,7 @@ pub struct TranslationForLocale {
     pub locale: String,
     pub content: Option<String>,
     pub created_at: String,
+    pub user_id: Option<i32>,
 }
 
 #[derive(RustcEncodable)]
@@ -97,6 +100,7 @@ pub struct Translation {
     pub content: Option<String>,
     pub created_at: String,
     pub deleted_at: Option<String>,
+    pub user_id: Option<i32>,
 }
 
 Queryable! {
@@ -107,6 +111,7 @@ Queryable! {
         pub content: Option<String>,
         pub created_at: String,
         pub deleted_at: Option<String>,
+        pub user_id: Option<i32>,
     }
 }
 

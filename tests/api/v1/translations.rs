@@ -26,6 +26,7 @@ mod tests {
         locale: String,
         content: Option<String>,
         created_at: String,
+        user_id: Option<i32>
     }
 
     #[derive(RustcDecodable)]
@@ -36,6 +37,7 @@ mod tests {
         pub content: Option<String>,
         pub created_at: String,
         pub deleted_at: Option<String>,
+        pub user_id: Option<i32>,
     }
 
     #[test]
@@ -104,7 +106,7 @@ mod tests {
         assert_eq!(6, translations_1.get(&"ui.add".to_string()).unwrap().len());
 
         // We create new translations on key `test.hello`
-        let (response, _) = post_translation(
+        let (response, content) = post_translation(
             NewTranslation {
                 key: Some("test.hello"),
                 locale: Some("fr"),
@@ -115,7 +117,16 @@ mod tests {
 
         assert_eq!(StatusCode::Created, response.status);
 
-        let (response, _) = post_translation(
+        let translation = parse_translation(&content);
+
+        assert_eq!("test.hello", translation.key);
+        assert_eq!("fr", translation.locale);
+        assert_eq!(Some("Bonjour".to_string()), translation.content);
+        assert!(has_happened_now(&translation.created_at));
+        assert_eq!(None, translation.deleted_at);
+        assert_eq!(Some(1), translation.user_id);
+
+        let (response, content) = post_translation(
             NewTranslation {
                 key: Some("test.hello"),
                 locale: Some("en"),
@@ -125,6 +136,15 @@ mod tests {
         );
 
         assert_eq!(StatusCode::Created, response.status);
+
+        let translation = parse_translation(&content);
+
+        assert_eq!("test.hello", translation.key);
+        assert_eq!("en", translation.locale);
+        assert_eq!(Some("Hello".to_string()), translation.content);
+        assert!(has_happened_now(&translation.created_at));
+        assert_eq!(None, translation.deleted_at);
+        assert_eq!(Some(1), translation.user_id);
 
         // We fetch all translations
         let (response, content) = get("/api/v1/translations", valid_token());
@@ -186,6 +206,10 @@ mod tests {
     }
 
     fn parse_translations_by_locales(content: &str) -> HashMap<String, Vec<TranslationForLocale>> {
+        json::decode(content).unwrap()
+    }
+
+    fn parse_translation(content: &str) -> Translation {
         json::decode(content).unwrap()
     }
 
