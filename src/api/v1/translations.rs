@@ -56,8 +56,7 @@ pub fn create(request: &mut Request) -> IronResult<Response> {
     let new_locale = try!(get_param(request, "locale"));
     let new_content = try!(get_param(request, "content"));
 
-    let current_session = request.extensions.get::<Session>().unwrap();
-    let user = try!(current_session.user());
+    let user = current_user(request)?;
 
     let new_translation = NewTranslation {
         key: new_key,
