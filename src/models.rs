@@ -59,6 +59,8 @@ pub struct TranslationForLocale {
     pub content: Option<String>,
     pub created_at: String,
     pub user_id: Option<i32>,
+    pub validator_id: Option<i32>,
+    pub validated_at: Option<String>,
 }
 
 #[derive(Queryable, RustcEncodable)]
@@ -70,6 +72,8 @@ pub struct Translation {
     pub created_at: String,
     pub deleted_at: Option<String>,
     pub user_id: Option<i32>,
+    pub validator_id: Option<i32>,
+    pub validated_at: Option<String>,
 }
 
 #[derive(Queryable)]

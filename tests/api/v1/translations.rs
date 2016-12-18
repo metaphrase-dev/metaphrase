@@ -26,7 +26,9 @@ mod tests {
         locale: String,
         content: Option<String>,
         created_at: String,
-        user_id: Option<i32>
+        user_id: Option<i32>,
+        validator_id: Option<i32>,
+        validated_at: Option<String>,
     }
 
     #[derive(RustcDecodable)]
@@ -38,6 +40,8 @@ mod tests {
         pub created_at: String,
         pub deleted_at: Option<String>,
         pub user_id: Option<i32>,
+        pub validator_id: Option<i32>,
+        pub validated_at: Option<String>,
     }
 
     #[test]

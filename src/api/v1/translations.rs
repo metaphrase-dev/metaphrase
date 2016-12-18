@@ -37,6 +37,8 @@ pub fn index(_: &mut Request) -> IronResult<Response> {
               content: translation.content.clone(),
               created_at: translation.created_at.clone(),
               user_id: translation.user_id,
+              validator_id: translation.validator_id,
+              validated_at: translation.validated_at.clone(),
           }
       );
     }
