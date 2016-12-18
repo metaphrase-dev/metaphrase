@@ -19,8 +19,7 @@ mod tests {
         content: Option<&'static str>,
     }
 
-    #[allow(dead_code)]
-    #[derive(RustcDecodable)]
+    #[derive(Clone, RustcDecodable)]
     struct TranslationForLocale {
         id: i32,
         locale: String,
@@ -190,6 +189,68 @@ mod tests {
         assert_eq!("test.hello", translations_4[1].key);
         assert!(translations_4[0].deleted_at.is_some());
         assert!(translations_4[1].deleted_at.is_some());
+    }
+
+    #[test]
+    fn test_validate_without_token() {
+        let (response, content) = post("/api/v1/translations/1/validate", None, None);
+
+        assert_eq!(StatusCode::Unauthorized, response.status);
+        assert_eq!("", content);
+    }
+
+    #[test]
+    fn test_validate_when_not_found() {
+        let (response, content) = post("/api/v1/translations/999999/validate", None, valid_token());
+
+        assert_eq!(StatusCode::NotFound, response.status);
+        assert_eq!("", content);
+    }
+
+    #[test]
+    fn test_validate_with_success() {
+        // We fetch all translations
+        let (response, content) = get("/api/v1/translations", valid_token());
+
+        assert_eq!(StatusCode::Ok, response.status);
+
+        let translations_1 = parse_translations_by_locales(&content);
+
+        for translation in translations_1.get(&"ui.add".to_string()).unwrap() {
+            // None are validated
+            assert_eq!(None, translation.validator_id);
+        }
+
+        // We validate the first translation
+        let (response, content) = post("/api/v1/translations/1/validate", None, valid_token());
+
+        assert_eq!(StatusCode::NoContent, response.status);
+        assert_eq!("", content);
+
+        // We fetch all translations
+        let (response, content) = get("/api/v1/translations", valid_token());
+
+        assert_eq!(StatusCode::Ok, response.status);
+
+        let translations_2 = parse_translations_by_locales(&content);
+        let ui_add_translations = translations_2.get(&"ui.add".to_string()).unwrap();
+
+        // The first translation is validated
+        let validated_translation = ui_add_translations[0].clone();
+        assert_eq!(1, validated_translation.id);
+        assert_eq!(Some(1), validated_translation.validator_id);
+        assert!(has_happened_now(validated_translation.validated_at.unwrap().as_str()));
+
+        // The other translations are not validated
+        assert_eq!(None, ui_add_translations[1].validator_id);
+        assert_eq!(None, ui_add_translations[1].validated_at);
+        assert_eq!(None, ui_add_translations[2].validator_id);
+        assert_eq!(None, ui_add_translations[2].validated_at);
+        assert_eq!(None, ui_add_translations[3].validator_id);
+        assert_eq!(None, ui_add_translations[3].validated_at);
+        assert_eq!(None, ui_add_translations[4].validator_id);
+        assert_eq!(None, ui_add_translations[4].validated_at);
+        assert_eq!(None, ui_add_translations[5].validator_id);
     }
 
     #[test]

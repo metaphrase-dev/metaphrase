@@ -63,7 +63,7 @@ pub struct TranslationForLocale {
     pub validated_at: Option<String>,
 }
 
-#[derive(Queryable, RustcEncodable)]
+#[derive(AsChangeset, Queryable, RustcEncodable)]
 pub struct Translation {
     pub id: i32,
     pub key: String,

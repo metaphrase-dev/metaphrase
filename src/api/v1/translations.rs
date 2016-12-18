@@ -3,6 +3,8 @@ use iron::prelude::*;
 use iron::status;
 use diesel::expression::dsl::sql;
 use diesel::prelude::*;
+use diesel::sqlite::SqliteConnection;
+use errors::*;
 use models::*;
 use rustc_serialize::json;
 use schema::translations::dsl::*;
@@ -103,6 +105,38 @@ pub fn show(request: &mut Request) -> IronResult<Response> {
     Ok(Response::with((ContentType::json().0, status::Ok, payload)))
 }
 
+pub fn validate(request: &mut Request) -> IronResult<Response> {
+    use diesel;
+    use diesel::prelude::*;
+    use router::Router;
+    use schema::translations::dsl::*;
+
+    let translation_id: i32 = request.extensions
+        .get::<Router>().unwrap()
+        .find("id").unwrap()
+        .parse().unwrap();
+
+    let user = current_user(request)?;
+
+    let connection = database::establish_connection()?;
+    let mut translation = find_translation(&connection, translation_id)?;
+
+    translation.validator_id = Some(user.id);
+    translation.validated_at = Some(now_str()?);
+
+    let validated = diesel::update(translations.find(translation.id))
+        .set(&translation)
+        .execute(&connection)
+        .expect(&format!("Unable to validate translation with id={}", &translation_id));
+
+    let status = match validated {
+        1 => status::NoContent,
+        _ => status::InternalServerError,
+    };
+
+    Ok(Response::with((ContentType::json().0, status)))
+}
+
 pub fn delete(request: &mut Request) -> IronResult<Response> {
     use diesel;
     use router::Router;
@@ -134,4 +168,14 @@ pub fn delete(request: &mut Request) -> IronResult<Response> {
     };
 
     Ok(Response::with((ContentType::json().0, status, payload)))
+}
+
+fn find_translation(connection: &SqliteConnection, translation_id: i32) -> Result<Translation, NotFoundError> {
+    use diesel::prelude::*;
+    use schema::translations::dsl::*;
+
+    match translations.find(translation_id).first::<Translation>(connection) {
+        Ok(translation) => Ok(translation),
+        Err(_) => Err(NotFoundError(format!("Can’t find Translation with id={}", translation_id))),
+    }
 }
