@@ -8,7 +8,7 @@ use super::*;
 pub struct AuthenticationMiddleware;
 
 impl AuthenticationMiddleware {
-    fn authorize(&self, token: &String) -> Result<Session, StringError> {
+    fn authorize(&self, token: &str) -> Result<Session, StringError> {
         authenticate_token(token)
     }
 

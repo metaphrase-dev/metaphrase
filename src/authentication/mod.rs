@@ -5,7 +5,7 @@ use models::*;
 
 pub mod middleware;
 
-pub fn authenticate_user(email: &String, password: &String) -> Result<(User, Session), StringError> {
+pub fn authenticate_user(email: &str, password: &str) -> Result<(User, Session), StringError> {
     let user = try!(retrieve_user(&email));
 
     try!(verify_password(&user, &password));
@@ -15,7 +15,7 @@ pub fn authenticate_user(email: &String, password: &String) -> Result<(User, Ses
     Ok((user, session))
 }
 
-pub fn authenticate_token(auth_token: &String) -> Result<Session, StringError> {
+pub fn authenticate_token(auth_token: &str) -> Result<Session, StringError> {
     use schema::sessions::dsl::*;
     use time;
 
@@ -35,7 +35,7 @@ pub fn authenticate_token(auth_token: &String) -> Result<Session, StringError> {
     }
 }
 
-pub fn create_user(new_email: &String, new_password: &String) -> Result<User, StringError> {
+pub fn create_user(new_email: &str, new_password: &str) -> Result<User, StringError> {
     use diesel;
     use diesel::expression::dsl::sql;
     use schema::users::dsl::*;
@@ -82,7 +82,7 @@ pub fn delete_session(token_to_delete: String) -> Result<(), StringError> {
     }
 }
 
-pub fn retrieve_user(user_email: &String) -> Result<User, StringError> {
+pub fn retrieve_user(user_email: &str) -> Result<User, StringError> {
     use schema::users::dsl::*;
 
     let connection = try!(database::establish_connection());
@@ -130,7 +130,7 @@ fn generate_token() -> Result<String, StringError> {
     Ok(token)
 }
 
-fn hash_password(ref password: &String) -> Result<String, StringError> {
+fn hash_password(password: &str) -> Result<String, StringError> {
     use pwhash::bcrypt;
 
     match bcrypt::hash(password) {
@@ -139,12 +139,13 @@ fn hash_password(ref password: &String) -> Result<String, StringError> {
     }
 }
 
-fn verify_password(user: &User, password: &String) -> Result<(), StringError> {
+fn verify_password(user: &User, password: &str) -> Result<(), StringError> {
     use pwhash::bcrypt;
 
-    match bcrypt::verify(password.as_str(), &user.hashed_password.as_str()) {
-        true => Ok(()),
-        false => Err(StringError("Authentication failed")),
+    if bcrypt::verify(password, user.hashed_password.as_str()) {
+        Ok(())
+    } else {
+        Err(StringError("Authentication failed"))
     }
 }
 

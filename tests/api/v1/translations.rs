@@ -185,12 +185,12 @@ mod tests {
         assert_eq!(0, result.deleted_translations);
     }
 
-    fn parse_translations_by_locales(ref content: &String) -> HashMap<String, Vec<TranslationForLocale>> {
-        json::decode(&content).unwrap()
+    fn parse_translations_by_locales(content: &str) -> HashMap<String, Vec<TranslationForLocale>> {
+        json::decode(content).unwrap()
     }
 
-    fn parse_translations(ref content: &String) -> Vec<Translation> {
-        json::decode(&content).unwrap()
+    fn parse_translations(content: &str) -> Vec<Translation> {
+        json::decode(content).unwrap()
     }
 
     fn post_translation(translation: NewTranslation, token: Option<String>) -> (Response, String) {
