@@ -52,6 +52,16 @@ pub fn valid_token() -> Option<String> {
     Some("goodtokenfortests".to_string())
 }
 
+pub fn has_happened_now(time_str: &str) -> bool {
+    use time::{Duration, now_utc, strptime};
+
+    let time = strptime(time_str, "%F %T").unwrap();
+    let now = now_utc();
+    let min = now - Duration::seconds(1);
+
+    time > min && time <= now
+}
+
 fn headers(token: Option<String>) -> Headers {
     use hyper::header::{Authorization, Bearer, ContentType, Headers};
     use hyper::mime::{Mime, TopLevel, SubLevel, Attr, Value};
