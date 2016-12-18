@@ -26,6 +26,25 @@ impl From<BadRequestError> for IronError {
     }
 }
 
+#[derive(Debug)]
+pub struct NotFoundError(pub String);
+
+impl fmt::Display for NotFoundError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        Debug::fmt(self, f)
+    }
+}
+
+impl Error for NotFoundError {
+    fn description(&self) -> &str { &*self.0.as_str() }
+}
+
+impl From<NotFoundError> for IronError {
+    fn from(error: NotFoundError) -> IronError {
+        IronError::new(error, status::NotFound)
+    }
+}
+
 // FIXME: Remove this generic error once all errors are implemented
 #[derive(Debug)]
 pub struct StringError(pub &'static str);
