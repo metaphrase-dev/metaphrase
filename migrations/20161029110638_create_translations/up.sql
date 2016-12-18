@@ -4,6 +4,8 @@ CREATE TABLE translations (
   locale TEXT NOT NULL,
   content TEXT,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  deleted_at TEXT DEFAULT NULL
+  deleted_at TEXT DEFAULT NULL,
+  user_id INTEGER DEFAULT NULL,
+  FOREIGN KEY(user_id) REFERENCES user(id) ON DELETE RESTRICT
 );
 

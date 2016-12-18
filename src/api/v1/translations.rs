@@ -36,6 +36,7 @@ pub fn index(_: &mut Request) -> IronResult<Response> {
               locale: translation.locale.clone(),
               content: translation.content.clone(),
               created_at: translation.created_at.clone(),
+              user_id: translation.user_id,
           }
       );
     }
@@ -55,10 +56,14 @@ pub fn create(request: &mut Request) -> IronResult<Response> {
     let new_locale = try!(get_param(request, "locale"));
     let new_content = try!(get_param(request, "content"));
 
+    let current_session = request.extensions.get::<Session>().unwrap();
+    let user = try!(current_session.user());
+
     let new_translation = NewTranslation {
         key: new_key,
         locale: new_locale,
         content: new_content,
+        user_id: user.id,
     };
 
     let connection = try!(database::establish_connection());

@@ -16,6 +16,7 @@ table! {
         content -> Nullable<Text>,
         created_at -> Text,
         deleted_at -> Nullable<Text>,
+        user_id -> Nullable<Integer>,
     }
 }
 
