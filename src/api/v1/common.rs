@@ -11,6 +11,15 @@ pub fn current_user(request: &Request) -> Result<User, StringError> {
     current_session.user()
 }
 
+pub fn now_str() -> Result<String, StringError> {
+    use time::{now_utc, strftime};
+
+    match strftime("%F %T", &now_utc()) {
+        Ok(time) => Ok(time),
+        Err(_) => Err(StringError("Time parse error")),
+    }
+}
+
 pub fn get_param(request: &mut Request, name: &str) -> Result<String, BadRequestError> {
     let parameters = request.get_ref::<Params>().unwrap();
 

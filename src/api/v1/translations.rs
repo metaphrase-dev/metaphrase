@@ -104,13 +104,12 @@ pub fn show(request: &mut Request) -> IronResult<Response> {
 pub fn delete(request: &mut Request) -> IronResult<Response> {
     use diesel;
     use router::Router;
-    use time;
 
     let key_to_delete = request.extensions.get::<Router>().unwrap().find("key").unwrap();
 
     let connection = try!(database::establish_connection());
 
-    let now = time::strftime("%F %T", &time::now_utc()).unwrap();
+    let now = now_str()?;
 
     let selected_translations = translations.filter(key.eq(&key_to_delete))
         .filter(deleted_at.is_null());
