@@ -28,7 +28,7 @@ pub fn index(_: &mut Request) -> IronResult<Response> {
 
     for translation in &results {
       let mut translations_for_key = all_translations.entry(&translation.key)
-          .or_insert(Vec::<TranslationForLocale>::new());
+          .or_insert_with(Vec::<TranslationForLocale>::new);
 
       translations_for_key.push(
           TranslationForLocale {
@@ -82,7 +82,7 @@ pub fn create(request: &mut Request) -> IronResult<Response> {
 pub fn show(request: &mut Request) -> IronResult<Response> {
     use router::Router;
 
-    let ref translation_key = request.extensions.get::<Router>().unwrap().find("key").unwrap();
+    let translation_key = request.extensions.get::<Router>().unwrap().find("key").unwrap();
 
     let connection = try!(database::establish_connection());
 

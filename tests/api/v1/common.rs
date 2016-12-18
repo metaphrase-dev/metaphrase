@@ -58,10 +58,9 @@ fn headers(token: Option<String>) -> Headers {
 
     let mut headers = Headers::new();
 
-    match token {
-        Some(token) => headers.set(Authorization(Bearer { token: token })),
-        None => {},
-    };
+    if let Some(token) = token {
+        headers.set(Authorization(Bearer { token: token }))
+    }
 
     headers.set(
         ContentType(
