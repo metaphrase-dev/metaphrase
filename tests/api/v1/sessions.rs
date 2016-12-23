@@ -44,6 +44,18 @@ mod tests {
     }
 
     #[test]
+    fn test_login_with_wrong_password() {
+        let login_params = LoginParams {
+            email: Some("raphael@lustin.fr"),
+            password: Some("wrongpassword"),
+        };
+
+        let (response, _) = login(login_params);
+
+        assert_eq!(StatusCode::Unauthorized, response.status);
+    }
+
+    #[test]
     fn test_login_then_logout_with_success() {
         use time;
 

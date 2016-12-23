@@ -36,7 +36,7 @@ pub struct Session {
 }
 
 impl Session {
-    pub fn user(&self) -> Result<User, StringError> {
+    pub fn user(&self) -> Result<User, LughError> {
         use database;
         use diesel::prelude::*;
         use schema::users::dsl::*;
@@ -45,7 +45,7 @@ impl Session {
 
         match users.find(&self.user_id).first::<User>(&connection) {
             Ok(user) => Ok(user),
-            Err(_) => Err(StringError("User not found for this Session")),
+            Err(_) => Err(LughError::NotFound("User not found for this Session".to_string())),
         }
     }
 }
@@ -94,7 +94,7 @@ mod tests {
         let result = session_for_user_id(999999).user();
 
         assert!(result.is_err());
-        assert_eq!(StringError("User not found for this Session"), result.err().unwrap())
+        assert_eq!(LughError::NotFound("User not found for this Session".to_string()), result.err().unwrap())
     }
 
     #[test]

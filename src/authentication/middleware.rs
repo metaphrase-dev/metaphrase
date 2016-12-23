@@ -8,7 +8,7 @@ use super::*;
 pub struct AuthenticationMiddleware;
 
 impl AuthenticationMiddleware {
-    fn authorize(&self, token: &str) -> Result<Session, StringError> {
+    fn authorize(&self, token: &str) -> Result<Session, LughError> {
         authenticate_token(token)
     }
 
@@ -17,7 +17,7 @@ impl AuthenticationMiddleware {
         use errors::*;
 
         Err(IronError {
-            error: Box::new(StringError("Unauthorized")),
+            error: Box::new(LughError::Unauthorized("Unauthorized".to_string())),
             response: Response::with(status::Unauthorized),
         })
     }
