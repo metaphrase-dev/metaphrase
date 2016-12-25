@@ -216,7 +216,7 @@ mod tests {
 
         let translations_1 = parse_translations_by_locales(&content);
 
-        for translation in translations_1.get(&"ui.add".to_string()).unwrap() {
+        for translation in &translations_1[&"ui.add".to_string()] {
             // None are validated
             assert_eq!(None, translation.validator_id);
         }
@@ -233,7 +233,7 @@ mod tests {
         assert_eq!(StatusCode::Ok, response.status);
 
         let translations_2 = parse_translations_by_locales(&content);
-        let ui_add_translations = translations_2.get(&"ui.add".to_string()).unwrap();
+        let ui_add_translations = &translations_2[&"ui.add".to_string()];
 
         // The first translation is validated
         let validated_translation = ui_add_translations[0].clone();
