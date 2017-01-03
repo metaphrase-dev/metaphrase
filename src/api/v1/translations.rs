@@ -170,12 +170,12 @@ pub fn delete(request: &mut Request) -> IronResult<Response> {
     Ok(Response::with((ContentType::json().0, status, payload)))
 }
 
-fn find_translation(connection: &SqliteConnection, translation_id: i32) -> Result<Translation, NotFoundError> {
+fn find_translation(connection: &SqliteConnection, translation_id: i32) -> Result<Translation, LughError> {
     use diesel::prelude::*;
     use schema::translations::dsl::*;
 
     match translations.find(translation_id).first::<Translation>(connection) {
         Ok(translation) => Ok(translation),
-        Err(_) => Err(NotFoundError(format!("Can’t find Translation with id={}", translation_id))),
+        Err(_) => Err(LughError::NotFound(format!("Can’t find Translation with id={}", translation_id))),
     }
 }
