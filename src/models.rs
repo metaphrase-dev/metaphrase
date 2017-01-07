@@ -41,7 +41,7 @@ impl Session {
         use diesel::prelude::*;
         use schema::users::dsl::*;
 
-        let connection = try!(database::establish_connection());
+        let connection = database::establish_connection()?;
 
         match users.find(&self.user_id).first::<User>(&connection) {
             Ok(user) => Ok(user),

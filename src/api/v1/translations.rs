@@ -15,7 +15,7 @@ use super::common::*;
 pub fn index(_: &mut Request) -> IronResult<Response> {
     use std::collections::HashMap;
 
-    let connection = try!(database::establish_connection());
+    let connection = database::establish_connection()?;
     let results = translations.filter(
             sql("key || locale || created_at IN (
                   SELECT key || locale || MAX(created_at)
@@ -56,9 +56,9 @@ pub fn create(request: &mut Request) -> IronResult<Response> {
     use diesel;
     use schema::translations;
 
-    let new_key = try!(get_param(request, "key"));
-    let new_locale = try!(get_param(request, "locale"));
-    let new_content = try!(get_param(request, "content"));
+    let new_key = get_param(request, "key")?;
+    let new_locale = get_param(request, "locale")?;
+    let new_content = get_param(request, "content")?;
 
     let user = current_user(request)?;
 
@@ -69,7 +69,7 @@ pub fn create(request: &mut Request) -> IronResult<Response> {
         user_id: user.id,
     };
 
-    let connection = try!(database::establish_connection());
+    let connection = database::establish_connection()?;
 
     diesel::insert(&new_translation)
         .into(translations::table)
@@ -92,7 +92,7 @@ pub fn show(request: &mut Request) -> IronResult<Response> {
 
     let translation_key = request.extensions.get::<Router>().unwrap().find("key").unwrap();
 
-    let connection = try!(database::establish_connection());
+    let connection = database::establish_connection()?;
 
     let all_translations = translations.filter(key.eq(translation_key))
         .load::<Translation>(&connection)
@@ -143,7 +143,7 @@ pub fn delete(request: &mut Request) -> IronResult<Response> {
 
     let key_to_delete = request.extensions.get::<Router>().unwrap().find("key").unwrap();
 
-    let connection = try!(database::establish_connection());
+    let connection = database::establish_connection()?;
 
     let now = now_str()?;
 

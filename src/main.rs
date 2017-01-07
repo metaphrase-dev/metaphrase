@@ -1,4 +1,4 @@
-#![feature(custom_attribute, custom_derive, proc_macro)]
+#![feature(custom_attribute, custom_derive)]
 #[macro_use] extern crate diesel_codegen;
 #[macro_use] extern crate diesel;
 extern crate dotenv;

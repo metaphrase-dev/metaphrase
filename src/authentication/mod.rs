@@ -6,11 +6,11 @@ use models::*;
 pub mod middleware;
 
 pub fn authenticate_user(email: &str, password: &str) -> Result<(User, Session), LughError> {
-    let user = try!(retrieve_user(&email));
+    let user = retrieve_user(&email)?;
 
-    try!(verify_password(&user, &password));
+    verify_password(&user, &password)?;
 
-    let session = try!(create_session(&user));
+    let session = create_session(&user)?;
 
     Ok((user, session))
 }
@@ -19,7 +19,7 @@ pub fn authenticate_token(auth_token: &str) -> Result<Session, LughError> {
     use schema::sessions::dsl::*;
     use time;
 
-    let connection = try!(database::establish_connection());
+    let connection = database::establish_connection()?;
 
     match sessions.filter(token.eq(auth_token)).first::<Session>(&connection) {
         Ok(session) => {
@@ -41,14 +41,14 @@ pub fn create_user(new_email: &str, new_password: &str) -> Result<User, LughErro
     use schema::users::dsl::*;
     use schema::users::table;
 
-    let new_hashed_password = try!(hash_password(&new_password));
+    let new_hashed_password = hash_password(&new_password)?;
 
     let new_user = NewUser {
         email: new_email.to_string(),
         hashed_password: new_hashed_password,
     };
 
-    let connection = try!(database::establish_connection());
+    let connection = database::establish_connection()?;
 
     diesel::insert(&new_user)
         .into(table)
@@ -66,15 +66,13 @@ pub fn delete_session(token_to_delete: String) -> Result<(), LughError> {
     use diesel;
     use schema::sessions::dsl::*;
 
-    let connection = try!(database::establish_connection());
+    let connection = database::establish_connection()?;
 
-    let deleted = try!(
-        diesel::delete(
-            sessions.filter(
-                token.eq(&token_to_delete)
-            )
-        ).execute(&connection)
-    );
+    let deleted = diesel::delete(
+        sessions.filter(
+            token.eq(&token_to_delete)
+        )
+    ).execute(&connection)?;
 
     match deleted {
         0 => Err(LughError::NotFound("No session were deleted".to_string())),
@@ -85,7 +83,7 @@ pub fn delete_session(token_to_delete: String) -> Result<(), LughError> {
 pub fn retrieve_user(user_email: &str) -> Result<User, LughError> {
     use schema::users::dsl::*;
 
-    let connection = try!(database::establish_connection());
+    let connection = database::establish_connection()?;
 
     match users.filter(email.eq(user_email)).first::<User>(&connection) {
         Ok(user) => Ok(user),
@@ -100,20 +98,20 @@ fn create_session(user: &User) -> Result<Session, LughError> {
     use schema::sessions::table;
     use time::{Duration, now_utc, strftime};
 
-    let connection = try!(database::establish_connection());
+    let connection = database::establish_connection()?;
 
     let now = now_utc();
     let session_expired_at = now + Duration::days(7);
 
     let new_session = NewSession {
-        token: try!(generate_token()),
+        token: generate_token()?,
         user_id: user.id,
-        expired_at: try!(strftime("%F %T", &session_expired_at)),
+        expired_at: strftime("%F %T", &session_expired_at)?,
     };
 
-    try!(diesel::insert(&new_session).into(table).execute(&connection));
+    diesel::insert(&new_session).into(table).execute(&connection)?;
 
-    let session = try!(sessions.filter(id.eq(sql("last_insert_rowid()"))).get_result::<Session>(&connection));
+    let session = sessions.filter(id.eq(sql("last_insert_rowid()"))).get_result::<Session>(&connection)?;
 
     Ok(session)
 }
