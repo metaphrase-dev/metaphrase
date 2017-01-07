@@ -9,10 +9,10 @@ use super::common::*;
 pub fn login(request: &mut Request) -> IronResult<Response> {
     use models::NewSession;
 
-    let email = try!(get_param(request, "email"));
-    let password = try!(get_param(request, "password"));
+    let email = get_param(request, "email")?;
+    let password = get_param(request, "password")?;
 
-    let (user, session) = try!(authenticate_user(&email, &password));
+    let (user, session) = authenticate_user(&email, &password)?;
 
     let new_session = NewSession {
         token: session.token,
@@ -30,7 +30,7 @@ pub fn logout(request: &mut Request) -> IronResult<Response> {
 
     let current_session = request.extensions.get::<Session>().unwrap();
 
-    try!(delete_session(current_session.token.to_string()));
+    delete_session(current_session.token.to_string())?;
 
     Ok(Response::with((ContentType::json().0, status::NoContent)))
 }
