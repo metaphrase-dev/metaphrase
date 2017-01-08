@@ -20,7 +20,7 @@
     name: 'translation-group',
 
     props: {
-      translations: Object,
+      translations: Array,
       translationKey: String
     },
 

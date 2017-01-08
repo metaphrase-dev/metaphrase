@@ -1,5 +1,5 @@
 <template>
-  <div id="main">
+  <div id="main" :class="{'with-modal': modalShown}">
     <template v-if="loggedIn">
       <toolbar @logout="didLogOut" />
       <div id="workspace">
@@ -8,11 +8,20 @@
           :namespace="relevantNamespace"
           @namespaceChanged="updateNamespace" />
         <div id="translation-list">
+          <collection-toolbar
+            @showAddNewKey="showModal('add-new-key')" />
           <translation-group
             v-for="key in filteredTranslationKeys"
             :translation-key="key"
             :translations="store.groupedTranslations[key]" />
         </div>
+      </div>
+      <div id="modal-background" v-if="modalShown">
+        <component :is="`${modalName}-modal`"
+          :store="store"
+          :currentNamespace="relevantNamespace"
+          @submitModal="modalSubmitted"
+          @closeModal="resetModal"></component>
       </div>
     </template>
     <login-prompt v-else @didLogIn="didLogIn">
@@ -22,8 +31,12 @@
 <script>
   import Toolbar from "./toolbar.vue";
   import TranslationGroup from "./translation-group.vue";
+  import CollectionToolbar from "./collection-toolbar.vue";
   import NavigationBar from "./navigation-bar.vue";
   import LoginPrompt from "./login-prompt.vue";
+
+  import AddNewKeyModal from "./modals/add-new-key-modal.vue";
+
   import _ from "lodash";
 
   export default ({
@@ -37,6 +50,12 @@
 
     props: {
       store: Object
+    },
+
+    data() {
+      return {
+        modalName: ''
+      }
     },
 
     computed: {
@@ -69,6 +88,19 @@
 
       loggedIn() {
         return this.store.token !== null;
+      },
+
+      modalShown() {
+        return this.modalName.length > 0;
+      },
+
+      headers() {
+        let token = this.store.token;
+
+        return new Headers({
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        });
       }
     },
 
@@ -76,7 +108,11 @@
       toolbar: Toolbar,
       translationGroup: TranslationGroup,
       navigationBar: NavigationBar,
-      loginPrompt: LoginPrompt
+      loginPrompt: LoginPrompt,
+      collectionToolbar: CollectionToolbar,
+
+      // Modals
+      addNewKeyModal: AddNewKeyModal
     },
 
     methods: {
@@ -90,14 +126,9 @@
       },
 
       didLogOut() {
-        let token = this.store.token;
-        let headers = new Headers({
-          Authorization: `Bearer ${token}`
-        });
-
         fetch("/api/v1/logout", {
           method: 'POST',
-          headers: headers
+          headers: this.headers
         }).then(_ => this.resetToken());
       },
 
@@ -122,13 +153,8 @@
       },
 
       fetchTranslations() {
-        let token = this.store.token;
-        let headers = new Headers({
-          Authorization: `Bearer ${token}`
-        });
-
         fetch("/api/v1/translations", {
-          headers: headers
+          headers: this.headers
         })
           .then(response => {
             if(response.ok) {
@@ -142,6 +168,41 @@
           .then(data => {
             this.store.groupedTranslations = data;
           });
+      },
+
+      showModal(modal) {
+        this.modalName = modal;
+      },
+
+      resetModal() {
+        this.modalName = '';
+      },
+
+      modalSubmitted(modalName, data) {
+        if (modalName == 'add-new-key') {
+          fetch("/api/v1/translations", {
+            method: "POST",
+            headers: this.headers,
+            body: JSON['stringify'](
+              // FIXME: It would be better to bootstrap the content of this
+              //        empty translation with content from fields in the modal.
+              {
+                key: data.newKey,
+                locale: 'fr',
+                content: '' // FIXME:
+              }
+            )
+          }).then(response => response.json())
+            .then(data => {
+              // TODO: Add incremental fetch here not to refresh all the
+              //       translation store.
+              this.fetchTranslations();
+
+              this.updateNamespace(data.key);
+            });
+
+          this.resetModal();
+        }
       }
     }
   });
