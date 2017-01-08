@@ -20,6 +20,14 @@ mod tests {
     }
 
     #[test]
+    fn test_login_without_body() {
+        let (response, content) = post("/api/v1/login", None, None);
+
+        assert_eq!(StatusCode::BadRequest, response.status);
+        assert_eq!("", content)
+    }
+
+    #[test]
     fn test_login_without_email() {
         let login_params = LoginParams {
             email: None,

@@ -5,6 +5,7 @@ use iron::status;
 use std::error::Error;
 use std::fmt;
 use std::string::FromUtf8Error;
+use params::ParamsError;
 use time::ParseError;
 
 #[derive(Debug)]
@@ -74,6 +75,12 @@ impl From<DieselResultError> for LughError {
 impl From<FromUtf8Error> for LughError {
     fn from(_: FromUtf8Error) -> LughError {
         LughError::ParseFailed("Parse from UTF8 error".to_string())
+    }
+}
+
+impl From<ParamsError> for LughError {
+    fn from(error: ParamsError) -> LughError {
+        LughError::BadRequest(error.description().to_string())
     }
 }
 
