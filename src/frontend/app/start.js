@@ -6,7 +6,21 @@ import "whatwg-fetch";
 var store = {
   groupedTranslations: [],
   namespace: window.location.hash.substring(1),
+  token: null,
+  userId: null,
+  expiredAt: null
 };
+
+window.onhashchange = function() {
+  store.namespace = window.location.hash.substring(1);
+}
+
+// Fill store on login based on localStorage content
+if (localStorage.getItem('token') !== null) {
+  store.token = localStorage.getItem('token');
+  store.userId = localStorage.getItem('userId');
+  store.expiredAt = localStorage.getItem('expiredAt');
+}
 
 window.vue = new Vue({
   el: '#app',
@@ -22,13 +36,3 @@ window.vue = new Vue({
     'app': App
   }
 });
-
-fetch("/api/v1/translations")
-  .then(response => response.json())
-  .then(data => {
-    store.groupedTranslations = data;
-  });
-
-window.onhashchange = function() {
-  store.namespace = window.location.hash.substring(1);
-}
