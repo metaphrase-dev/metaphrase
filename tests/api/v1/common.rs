@@ -57,7 +57,7 @@ pub fn has_happened_now(time_str: &str) -> bool {
 
     let time = strptime(time_str, "%F %T").unwrap();
     let now = now_utc();
-    let min = now - Duration::seconds(1);
+    let min = now - Duration::seconds(2);
 
     time > min && time <= now
 }
