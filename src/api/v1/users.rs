@@ -11,7 +11,7 @@ pub fn create(request: &mut Request) -> IronResult<Response> {
 
     let inserted_user = authentication::create_user(&email, &password)?;
 
-    println!("User saved with id={}", inserted_user.id);
+    debug!("User saved with id={}", inserted_user.id);
 
     Ok(Response::with((ContentType::json().0, status::Created)))
 }

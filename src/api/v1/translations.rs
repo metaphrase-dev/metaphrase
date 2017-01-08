@@ -45,7 +45,7 @@ pub fn index(_: &mut Request) -> IronResult<Response> {
       );
     }
 
-    println!("Returns {} translations", all_translations.len());
+    debug!("Returns {} translations", all_translations.len());
 
     let payload = json::encode(&all_translations).unwrap();
 
@@ -80,7 +80,7 @@ pub fn create(request: &mut Request) -> IronResult<Response> {
         .get_result::<Translation>(&connection)
         .expect("Error getting inserted translation");
 
-    println!("Translation saved with id={}", inserted_translation.id);
+    debug!("Translation saved with id={}", inserted_translation.id);
 
     let payload = json::encode(&inserted_translation).unwrap();
 
@@ -98,7 +98,7 @@ pub fn show(request: &mut Request) -> IronResult<Response> {
         .load::<Translation>(&connection)
         .expect("Error loading translations");
 
-    println!("Returns {} translations", all_translations.len());
+    debug!("Returns {} translations", all_translations.len());
 
     let payload = json::encode(&all_translations).unwrap();
 
