@@ -44,6 +44,14 @@ mod tests {
     }
 
     #[test]
+    fn test_create_without_body() {
+        let (response, content) = post("/api/v1/translations", None, valid_token());
+
+        assert_eq!(StatusCode::BadRequest, response.status);
+        assert_eq!("", content)
+    }
+
+    #[test]
     fn test_create_without_token() {
         let new_translation = NewTranslation {
             key: Some("test.i_love_train"),

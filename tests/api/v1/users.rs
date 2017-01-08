@@ -13,6 +13,14 @@ mod tests {
     }
 
     #[test]
+    fn test_create_without_body() {
+        let (response, content) = post("/api/v1/users", None, valid_token());
+
+        assert_eq!(StatusCode::BadRequest, response.status);
+        assert_eq!("", content)
+    }
+
+    #[test]
     fn test_create_without_token() {
         let new_user = NewUser {
             email: Some("user@domain.com"),

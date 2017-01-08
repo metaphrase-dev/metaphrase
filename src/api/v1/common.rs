@@ -21,7 +21,7 @@ pub fn now_str() -> Result<String, LughError> {
 }
 
 pub fn get_param(request: &mut Request, name: &str) -> Result<String, LughError> {
-    let parameters = request.get_ref::<Params>().unwrap();
+    let parameters = request.get_ref::<Params>()?;
 
     match parameters.find(&[name]) {
         Some(&Value::String(ref value)) => Ok(value.clone()),
