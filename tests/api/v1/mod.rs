@@ -32,4 +32,26 @@ mod tests {
         assert_eq!(response.status, StatusCode::Unauthorized);
         assert_eq!(result, "");
     }
+
+    #[test]
+    fn test_index_without_content_type() {
+        use hyper::*;
+        use hyper::header::{Authorization, Bearer, Headers};
+        use std::io::Read;
+
+        let mut headers = Headers::new();
+        headers.set(Authorization(Bearer { token: valid_token().unwrap() }));
+
+        let mut response = Client::new()
+            .get(&url("/api/v1"))
+            .headers(headers)
+            .send()
+            .unwrap();
+
+        let mut result = String::new();
+        response.read_to_string(&mut result).unwrap();
+
+        assert_eq!(StatusCode::BadRequest, response.status);
+        assert_eq!("", result);
+    }
 }

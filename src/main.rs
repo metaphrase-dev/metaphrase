@@ -47,6 +47,7 @@ fn main() {
 
     let mut api_chain = Chain::new(router);
     api_chain.link_before(authentication::middleware::AuthenticationMiddleware);
+    api_chain.link_before(api::middleware::ContentTypeMiddleware);
 
     let mut mount = Mount::new();
     mount.mount("/", Static::new(Path::new("src/frontend/public/")));

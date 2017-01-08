@@ -48,6 +48,18 @@ pub fn post(path: &'static str, body: Option<String>, token: Option<String>) -> 
     (response, content)
 }
 
+pub fn url(path: &'static str) -> String {
+    use dotenv::dotenv;
+    use std::env;
+
+    dotenv().ok();
+
+    let hostname = env::var("LUGH_BIND")
+        .expect("LUGH_BIND must be set");
+
+    "http://".to_string() + hostname.as_str() + path
+}
+
 pub fn valid_token() -> Option<String> {
     Some("goodtokenfortests".to_string())
 }
@@ -83,16 +95,4 @@ fn headers(token: Option<String>) -> Headers {
     );
 
     headers
-}
-
-fn url(path: &'static str) -> String {
-    use dotenv::dotenv;
-    use std::env;
-
-    dotenv().ok();
-
-    let hostname = env::var("LUGH_BIND")
-        .expect("LUGH_BIND must be set");
-
-    "http://".to_string() + hostname.as_str() + path
 }
