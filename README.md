@@ -67,3 +67,8 @@ TEST_LUGH_BIND=127.0.0.1:3100
 ```
 
 You can run the tests with `make test`.
+
+To run a specific test, use `make test TEST=test_name`. Example:
+```
+make test TEST=api::v1::translations::tests::test_validate_with_success
+```
