@@ -6,9 +6,9 @@ use models::*;
 pub mod middleware;
 
 pub fn authenticate_user(email: &str, password: &str) -> Result<(User, Session), LughError> {
-    let user = retrieve_user(&email)?;
+    let user = retrieve_user(email)?;
 
-    verify_password(&user, &password)?;
+    verify_password(&user, password)?;
 
     let session = create_session(&user)?;
 
@@ -41,7 +41,7 @@ pub fn create_user(new_email: &str, new_password: &str) -> Result<User, LughErro
     use schema::users::dsl::*;
     use schema::users::table;
 
-    let new_hashed_password = hash_password(&new_password)?;
+    let new_hashed_password = hash_password(new_password)?;
 
     let new_user = NewUser {
         email: new_email.to_string(),
