@@ -3,12 +3,14 @@
 #[macro_use] extern crate diesel;
 extern crate dotenv;
 extern crate iron;
+#[macro_use] extern crate log;
 extern crate mount;
 extern crate params;
 extern crate pwhash;
 extern crate rand;
 extern crate router;
 extern crate rustc_serialize;
+extern crate simplelog;
 extern crate staticfile;
 extern crate time;
 
@@ -17,6 +19,7 @@ use iron::prelude::*;
 use staticfile::Static;
 use router::Router;
 use mount::Mount;
+use simplelog::{Config, TermLogger, LogLevelFilter};
 use std::env;
 use std::path::Path;
 
@@ -30,6 +33,8 @@ mod models;
 
 fn main() {
     dotenv().ok();
+
+    TermLogger::init(LogLevelFilter::Info, Config::default()).unwrap();
 
     let mut router = Router::new();
     router.get("/", api::v1::index, "api");
@@ -58,7 +63,7 @@ fn main() {
     chain.link_after(logger::RequestLogger);
 
     let bind = env::var("LUGH_BIND").unwrap_or("localhost:3000".to_string());
-    println!("Start application on {}", bind);
+    info!("Start application on {}", bind);
 
     Iron::new(chain).http(bind.as_str())
         .expect("Can’t start application");

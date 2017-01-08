@@ -30,7 +30,7 @@ impl BeforeMiddleware for RequestLogger {
     fn before(&self, request: &mut Request) -> IronResult<()> {
         self.start(request);
 
-        println!(
+        info!(
             "Started {} \"{}\" for {} at {}",
             request.method,
             format!("/{}", request.url.path().join("/")),
@@ -44,13 +44,13 @@ impl BeforeMiddleware for RequestLogger {
 
 impl AfterMiddleware for RequestLogger {
     fn after(&self, request: &mut Request, response: Response) -> IronResult<Response> {
-        println!("{} ({} ms)", response.status.unwrap(), self.elapsed_time(request)?);
+        info!("{} ({} ms)", response.status.unwrap(), self.elapsed_time(request)?);
 
         Ok(response)
     }
 
     fn catch(&self, request: &mut Request, err: IronError) -> IronResult<Response> {
-        println!(
+        error!(
             "{}: {} ({} ms)",
             err.response.status.unwrap(),
             err.error,
