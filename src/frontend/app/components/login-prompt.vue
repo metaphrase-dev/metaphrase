@@ -36,22 +36,12 @@ export default {
 
   methods: {
     logIn() {
-      let headers = new Headers();
-      headers.append("Content-Type", "application/json");
-
-      let request = new Request('/api/v1/login', {
-        method: 'POST',
-        redirect: 'follow',
-        headers: headers,
-        body: JSON['stringify']({
-          email: this.loginEmail,
-          password: this.loginPassword
-        })
-      });
-
       this.loginError = '';
 
-      fetch(request)
+      this.$root.$data.callApi("/api/v1/login", "POST", {
+        email: this.loginEmail,
+        password: this.loginPassword
+      })
         .then((response) => {
           if (response.ok) {
             response.json().then((data) => {
