@@ -1,4 +1,5 @@
 mod common;
+mod configuration;
 mod sessions;
 mod translations;
 mod users;

@@ -8,6 +8,8 @@ pub fn router() -> Result<Router, LughError> {
 
     router.get("/", index, "api");
 
+    router.get("/configuration", configuration::index, "configuration");
+
     router.post("/login", sessions::login, "login");
     router.post("/logout", sessions::logout, "logout");
 

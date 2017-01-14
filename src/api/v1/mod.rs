@@ -5,6 +5,7 @@ use router::Router;
 use errors::LughError;
 
 pub mod common;
+pub mod configuration;
 pub mod router;
 pub mod sessions;
 pub mod translations;
