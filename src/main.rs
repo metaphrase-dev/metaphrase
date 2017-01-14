@@ -17,7 +17,6 @@ extern crate time;
 use dotenv::dotenv;
 use iron::prelude::*;
 use staticfile::Static;
-use router::Router;
 use mount::Mount;
 use simplelog::{Config, TermLogger, LogLevelFilter};
 use std::env;
@@ -36,19 +35,7 @@ fn main() {
 
     TermLogger::init(LogLevelFilter::Info, Config::default()).unwrap();
 
-    let mut router = Router::new();
-    router.get("/", api::v1::index, "api");
-
-    router.post("/login", api::v1::sessions::login, "login");
-    router.post("/logout", api::v1::sessions::logout, "logout");
-
-    router.get("/translations", api::v1::translations::index, "translations_index");
-    router.post("/translations", api::v1::translations::create, "translations_create");
-    router.post("/translations/:id/validate", api::v1::translations::validate, "translations_validate");
-    router.get("/translations/:key", api::v1::translations::show, "translations_show");
-    router.delete("/translations/:key", api::v1::translations::delete, "translations_delete");
-
-    router.post("/users", api::v1::users::create, "users_create");
+    let router = api::v1::router().unwrap();
 
     let mut api_chain = Chain::new(router);
     api_chain.link_before(authentication::middleware::AuthenticationMiddleware);
