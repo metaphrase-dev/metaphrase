@@ -17,4 +17,12 @@ rustup override set nightly
 
 cargo install diesel_cli --force
 
-sudo npm install -g brunch
+# brunch
+if [[ "$OSTYPE" == "linux-gnu" ]]; then
+	# Linux
+	sudo npm install -g brunch
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+	# macOS
+	# Let’s assume npm was installed via homebrew
+ 	npm install -g brunch
+fi
