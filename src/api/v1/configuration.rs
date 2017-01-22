@@ -1,27 +1,28 @@
-use dotenv::dotenv;
+use diesel::prelude::*;
 use iron::headers::ContentType;
 use iron::prelude::*;
 use iron::status;
 use rustc_serialize::json;
-use std::env;
+use std::collections::HashMap;
 
-#[derive(RustcEncodable)]
-struct Configuration {
-    locales: Vec<String>,
-}
+use database;
+use models::*;
+use schema::settings::dsl::*;
 
 pub fn index(_: &mut Request) -> IronResult<Response> {
-    dotenv().ok();
+    let connection = database::establish_connection()?;
 
-    let locales: Vec<String> = env::var("LUGH_AVAILABLE_LOCALES")
-        .unwrap()
-        .split(' ')
-        .map(|x| x.to_owned())
-        .collect();
+    let results = settings.load::<Setting>(&connection)
+        .expect("Error loading settings");
 
-    let configuration = Configuration {
-        locales: locales,
-    };
+    let mut configuration = HashMap::new();
+
+    for setting in &results {
+        let mut settings_for_key = configuration.entry(&setting.key)
+            .or_insert_with(Vec::<String>::new);
+
+        settings_for_key.push(setting.value.clone());
+    }
 
     let payload = json::encode(&configuration).unwrap();
 

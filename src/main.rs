@@ -61,5 +61,4 @@ fn check_environment_variables() {
     dotenv().ok();
 
     env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    env::var("LUGH_AVAILABLE_LOCALES").expect("LUGH_AVAILABLE_LOCALES must be set");
 }

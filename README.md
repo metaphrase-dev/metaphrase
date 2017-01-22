@@ -22,7 +22,6 @@ Configuration is made in `.env` file:
 DATABASE_URL=database.sqlite
 DATABASE_BUSY_TIMEOUT=250
 LUGH_BIND=127.0.0.1:3000
-LUGH_AVAILABLE_LOCALES=de en es fr it
 ```
 
 ## Migrate database
@@ -65,7 +64,6 @@ So that you do not conflict with the development, use these environment variable
 ```
 TEST_DATABASE_URL=test-database.sqlite
 TEST_LUGH_BIND=127.0.0.1:3100
-TEST_LUGH_AVAILABLE_LOCALES=de en es fr it
 ```
 
 You can run the tests with `make test`.
