@@ -12,9 +12,11 @@ else
     exit 1;
 fi
 
+# rustup
 command -v rustup >/dev/null 2>&1 || { echo 'I require `rustup` but it’s not installed. Install it with `curl https://sh.rustup.rs -sSf | sh`. Aborting.' >&2; exit 1; }
 rustup override set nightly
 
+# diesel_cli
 cargo install diesel_cli --force
 
 # brunch
