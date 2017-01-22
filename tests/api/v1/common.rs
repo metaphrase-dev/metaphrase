@@ -49,10 +49,7 @@ pub fn post(path: &'static str, body: Option<String>, token: Option<String>) -> 
 }
 
 pub fn url(path: &'static str) -> String {
-    use dotenv::dotenv;
     use std::env;
-
-    dotenv().ok();
 
     let hostname = env::var("LUGH_BIND")
         .expect("LUGH_BIND must be set");

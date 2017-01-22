@@ -16,7 +16,7 @@ make install
 ```
 
 ## Configure
-Configuration is made in `.env` file:
+Configuration is made with environment variables:
 
 ```
 DATABASE_URL=database.sqlite

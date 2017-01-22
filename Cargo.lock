@@ -4,7 +4,6 @@ version = "0.1.0"
 dependencies = [
  "diesel 0.9.1 (git+https://github.com/diesel-rs/diesel)",
  "diesel_codegen 0.9.0 (git+https://github.com/diesel-rs/diesel)",
- "dotenv 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "hyper 0.9.14 (registry+https://github.com/rust-lang/crates.io-index)",
  "iron 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.3.6 (registry+https://github.com/rust-lang/crates.io-index)",
