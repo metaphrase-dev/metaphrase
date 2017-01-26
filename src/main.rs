@@ -1,7 +1,6 @@
 #![feature(custom_attribute, custom_derive)]
 #[macro_use] extern crate diesel_codegen;
 #[macro_use] extern crate diesel;
-extern crate dotenv;
 extern crate iron;
 #[macro_use] extern crate log;
 extern crate mount;
@@ -14,7 +13,6 @@ extern crate simplelog;
 extern crate staticfile;
 extern crate time;
 
-use dotenv::dotenv;
 use iron::prelude::*;
 use staticfile::Static;
 use mount::Mount;
@@ -31,7 +29,6 @@ mod logger;
 mod models;
 
 fn main() {
-    dotenv().ok();
     check_environment_variables();
 
     TermLogger::init(LogLevelFilter::Info, Config::default()).unwrap();
@@ -58,8 +55,5 @@ fn main() {
 }
 
 fn check_environment_variables() {
-    dotenv().ok();
-
     env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    env::var("LUGH_AVAILABLE_LOCALES").expect("LUGH_AVAILABLE_LOCALES must be set");
 }

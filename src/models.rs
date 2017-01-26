@@ -52,6 +52,15 @@ impl Session {
 
 impl typemap::Key for Session { type Value = Session; }
 
+#[derive(Queryable)]
+pub struct Setting {
+    pub id: i32,
+    pub key: String,
+    pub value: String,
+    pub created_at: String,
+    pub updated_at: String,
+}
+
 #[derive(RustcEncodable)]
 pub struct TranslationForLocale {
     pub id: i32,

@@ -1,12 +1,9 @@
 use diesel::prelude::*;
 use diesel::sqlite::SqliteConnection;
-use dotenv::dotenv;
 use errors::LughError;
 use std::env;
 
 pub fn establish_connection() -> Result<SqliteConnection, LughError> {
-    dotenv().ok();
-
     let database_url = env::var("DATABASE_URL").unwrap();
     let busy_timeout = env::var("DATABASE_BUSY_TIMEOUT").unwrap_or("250".to_string());
 

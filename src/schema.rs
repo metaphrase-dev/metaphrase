@@ -9,6 +9,16 @@ table! {
 }
 
 table! {
+    settings {
+        id -> Integer,
+        key -> Text,
+        value -> Text,
+        created_at -> Text,
+        updated_at -> Text,
+    }
+}
+
+table! {
     translations {
         id -> Integer,
         key -> Text,

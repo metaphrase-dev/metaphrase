@@ -13,7 +13,6 @@ env:
     - DATABASE_BUSY_TIMEOUT=250
     - TEST_DATABASE_URL=/home/travis/lugh-test-database.sqlite
     - TEST_LUGH_BIND=localhost:3000
-    - TEST_LUGH_AVAILABLE_LOCALES="de en es fr it"
     - PATH="/home/travis/.cargo/bin:$PATH"
 before_script:
   - cargo install diesel_cli --force
