@@ -19,6 +19,13 @@ mod tests {
         content: Option<&'static str>,
     }
 
+    #[derive(RustcDecodable)]
+    pub struct LinterWarning {
+        pub message: String,
+        pub start: usize,
+        pub end: usize,
+    }
+
     #[derive(Clone, RustcDecodable)]
     struct TranslationForLocale {
         id: i32,
@@ -28,6 +35,12 @@ mod tests {
         user_id: Option<i32>,
         validator_id: Option<i32>,
         validated_at: Option<String>,
+    }
+
+    #[derive(RustcDecodable)]
+    struct CreateTranslationResponse {
+        translation: Translation,
+        warnings: Vec<LinterWarning>,
     }
 
     #[derive(RustcDecodable)]
@@ -128,14 +141,16 @@ mod tests {
 
         assert_eq!(StatusCode::Created, response.status);
 
-        let translation = parse_translation(&content);
+        let create_response = parse_create_translation(&content);
 
-        assert_eq!("test.hello", translation.key);
-        assert_eq!("fr", translation.locale);
-        assert_eq!(Some("Bonjour".to_string()), translation.content);
-        assert!(has_happened_now(&translation.created_at));
-        assert_eq!(None, translation.deleted_at);
-        assert_eq!(Some(1), translation.user_id);
+        assert_eq!("test.hello", create_response.translation.key);
+        assert_eq!("fr", create_response.translation.locale);
+        assert_eq!(Some("Bonjour".to_string()), create_response.translation.content);
+        assert!(has_happened_now(&create_response.translation.created_at));
+        assert_eq!(None, create_response.translation.deleted_at);
+        assert_eq!(Some(1), create_response.translation.user_id);
+
+        assert_eq!(true, create_response.warnings.is_empty());
 
         let (response, content) = post_translation(
             NewTranslation {
@@ -148,14 +163,48 @@ mod tests {
 
         assert_eq!(StatusCode::Created, response.status);
 
-        let translation = parse_translation(&content);
+        let create_response = parse_create_translation(&content);
 
-        assert_eq!("test.hello", translation.key);
-        assert_eq!("en", translation.locale);
-        assert_eq!(Some("Hello".to_string()), translation.content);
-        assert!(has_happened_now(&translation.created_at));
-        assert_eq!(None, translation.deleted_at);
-        assert_eq!(Some(1), translation.user_id);
+        assert_eq!("test.hello", create_response.translation.key);
+        assert_eq!("en", create_response.translation.locale);
+        assert_eq!(Some("Hello".to_string()), create_response.translation.content);
+        assert!(has_happened_now(&create_response.translation.created_at));
+        assert_eq!(None, create_response.translation.deleted_at);
+        assert_eq!(Some(1), create_response.translation.user_id);
+
+        assert_eq!(true, create_response.warnings.is_empty());
+
+        // We insert a translation with 2 linter warnings
+        let (response, content) = post_translation(
+            NewTranslation {
+                key: Some("test.me"),
+                locale: Some("en"),
+                content: Some("It's me..."),
+            },
+            valid_token()
+        );
+
+        assert_eq!(StatusCode::Created, response.status);
+
+        let create_response = parse_create_translation(&content);
+
+        assert_eq!("test.me", create_response.translation.key);
+        assert_eq!("en", create_response.translation.locale);
+        assert_eq!(Some("It's me...".to_string()), create_response.translation.content);
+        assert!(has_happened_now(&create_response.translation.created_at));
+        assert_eq!(None, create_response.translation.deleted_at);
+        assert_eq!(Some(1), create_response.translation.user_id);
+
+        let warnings = create_response.warnings;
+
+        assert_eq!(2, warnings.len());
+        assert_eq!("Please use curly apostrophes.", warnings[0].message);
+        assert_eq!(2, warnings[0].start);
+        assert_eq!(3, warnings[0].end);
+
+        assert_eq!("Please use the ellipsis symbol (`…`) instead of three dots (`...`).", warnings[1].message);
+        assert_eq!(7, warnings[1].start);
+        assert_eq!(10, warnings[1].end);
 
         // We fetch all translations
         let (response, content) = get("/api/v1/translations", valid_token());
@@ -164,9 +213,10 @@ mod tests {
 
         let translations_2 = parse_translations_by_locales(&content);
 
-        assert_eq!(2, translations_2.len());
+        assert_eq!(3, translations_2.len());
         assert_eq!(6, translations_2.get(&"ui.add".to_string()).unwrap().len());
         assert_eq!(2, translations_2.get(&"test.hello".to_string()).unwrap().len());
+        assert_eq!(1, translations_2.get(&"test.me".to_string()).unwrap().len());
 
         // We delete all translations with key equals to `test.hello`
         let (response, content) = delete("/api/v1/translations/test.hello", valid_token());
@@ -182,8 +232,9 @@ mod tests {
 
         let translations_3 = parse_translations_by_locales(&content);
 
-        assert_eq!(1, translations_3.len());
+        assert_eq!(2, translations_3.len());
         assert_eq!(6, translations_3.get(&"ui.add".to_string()).unwrap().len());
+        assert_eq!(1, translations_3.get(&"test.me".to_string()).unwrap().len());
 
         // We fetch all translations with key `test.hello`
         let (response, content) = get("/api/v1/translations/test.hello", valid_token());
@@ -282,7 +333,7 @@ mod tests {
         json::decode(content).unwrap()
     }
 
-    fn parse_translation(content: &str) -> Translation {
+    fn parse_create_translation(content: &str) -> CreateTranslationResponse {
         json::decode(content).unwrap()
     }
 

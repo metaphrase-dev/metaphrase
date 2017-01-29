@@ -54,7 +54,14 @@ pub fn index(_: &mut Request) -> IronResult<Response> {
 
 pub fn create(request: &mut Request) -> IronResult<Response> {
     use diesel;
+    use linter::*;
     use schema::translations;
+
+    #[derive(RustcEncodable)]
+    struct CreateTranslationResponse {
+        translation: Translation,
+        warnings: Vec<LinterWarning>,
+    }
 
     let new_key = get_param(request, "key")?;
     let new_locale = get_param(request, "locale")?;
@@ -82,7 +89,19 @@ pub fn create(request: &mut Request) -> IronResult<Response> {
 
     debug!("Translation saved with id={}", inserted_translation.id);
 
-    let payload = json::encode(&inserted_translation).unwrap();
+    let mut response = CreateTranslationResponse {
+        translation: inserted_translation,
+        warnings: Vec::new(),
+    };
+
+    let linter = Linter::new(new_translation.locale).unwrap()
+        .check(&new_translation.content);
+
+    if linter.is_err() {
+        response.warnings = linter.err().unwrap();
+    }
+
+    let payload = json::encode(&response).unwrap();
 
     Ok(Response::with((ContentType::json().0, status::Created, payload)))
 }
