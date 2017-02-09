@@ -7,6 +7,7 @@ extern crate mount;
 extern crate params;
 extern crate pwhash;
 extern crate rand;
+extern crate regex;
 extern crate router;
 extern crate rustc_serialize;
 extern crate simplelog;
@@ -25,6 +26,7 @@ mod authentication;
 mod database;
 mod errors;
 mod schema;
+mod linter;
 mod logger;
 mod models;
 
