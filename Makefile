@@ -5,8 +5,7 @@ migratedb:
 	diesel migration run
 
 build:
-	cargo build
-	(cd ./src/frontend && brunch build)
+	tools/build.sh
 
 run: build
 	cargo run
