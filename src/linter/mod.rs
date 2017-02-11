@@ -45,10 +45,10 @@ impl Linter {
             }
         }
 
-        if warnings.len() > 0 {
-            Err(warnings)
-        } else {
+        if warnings.is_empty() {
             Ok(())
+        } else {
+            Err(warnings)
         }
     }
 }
