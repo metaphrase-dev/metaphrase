@@ -12,12 +12,12 @@ pub trait LinterFilter {
 
         let mut warnings = Vec::<LinterWarning>::new();
 
-        let results = Regex::new(&self.regex_pattern()).unwrap();
+        let results = Regex::new(self.regex_pattern()).unwrap();
 
         for result in results.find_iter(text) {
             warnings.push(
                 LinterWarning {
-                    message: &self.message(),
+                    message: self.message(),
                     start: result.start(),
                     end: result.end(),
                 }
