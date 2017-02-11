@@ -2,6 +2,8 @@ dist: trusty
 language: rust
 cache: cargo
 rust:
+  - stable
+  - beta
   - nightly
 addons:
   apt:
