@@ -1,4 +1,3 @@
-#![feature(custom_attribute, custom_derive)]
 #[macro_use] extern crate diesel_codegen;
 #[macro_use] extern crate diesel;
 extern crate iron;
@@ -49,7 +48,7 @@ fn main() {
     chain.link_before(logger::RequestLogger);
     chain.link_after(logger::RequestLogger);
 
-    let bind = env::var("LUGH_BIND").unwrap_or("localhost:3000".to_string());
+    let bind = env::var("LUGH_BIND").unwrap_or_else(|_| "localhost:3000".to_string());
     info!("Start application on {}", bind);
 
     Iron::new(chain).http(bind.as_str())

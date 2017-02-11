@@ -4,10 +4,10 @@ version = "0.1.0"
 authors = ["Raphaël Lustin <raphael@lustin.fr>"]
 
 [dependencies]
-diesel = { git = "https://github.com/diesel-rs/diesel", features = ["sqlite"] }
-diesel_codegen = { git = "https://github.com/diesel-rs/diesel", features = ["sqlite"] }
+diesel = { version = "*", features = ["sqlite"] }
+diesel_codegen = { version = "*", features = ["sqlite"] }
 iron = "*"
-params = "0.5.0"
+params = "*"
 router = "*"
 log = "0.3.6"
 mount = "*"
