@@ -5,7 +5,7 @@ use std::env;
 
 pub fn establish_connection() -> Result<SqliteConnection, LughError> {
     let database_url = env::var("DATABASE_URL").unwrap();
-    let busy_timeout = env::var("DATABASE_BUSY_TIMEOUT").unwrap_or("250".to_string());
+    let busy_timeout = env::var("DATABASE_BUSY_TIMEOUT").unwrap_or_else(|_| "250".to_string());
 
     let connection = SqliteConnection::establish(&database_url)?;
 
