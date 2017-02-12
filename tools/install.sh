@@ -7,9 +7,10 @@ if [[ "$OSTYPE" == "linux-gnu" ]]; then
 elif [[ "$OSTYPE" == "darwin"* ]]; then
 	# macOS
 	# libsqlite3-dev is installed by default on any recent macOS
+	:
 else
-    echo "error can't install package `libsqlite3-dev`, unknown OS $OSTYPE"
-    exit 1;
+	echo "error can't install package `libsqlite3-dev`, unknown OS $OSTYPE"
+	exit 1;
 fi
 
 # rustup
