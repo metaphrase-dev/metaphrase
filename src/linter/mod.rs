@@ -26,20 +26,7 @@ impl Linter {
     pub fn check(&self, text: &str) -> Result<(), Vec<LinterWarning>> {
         let mut warnings = Vec::<LinterWarning>::new();
 
-        let filters: Vec<Box<LinterFilter>> = vec![
-            Box::new(CurlyApostropheFilter {}),
-            Box::new(EllipsisSymbolFilter {}),
-            Box::new(NoSpaceBeforeCommaFilter {}),
-            Box::new(SpaceBeforeDoublePonctuationFilter {}),
-        ];
-
-        let active_filters = filters
-            .into_iter()
-            .filter( |filter| filter.locales().is_empty() ||
-                filter.locales().contains(&self.locale.as_str()) )
-            .collect::<Vec<Box<LinterFilter>>>();
-
-        for filter in &active_filters {
+        for filter in &self.active_filters(self.locale.as_str()) {
             let result = filter.check(text);
 
             if result.is_err() {
@@ -52,6 +39,22 @@ impl Linter {
         } else {
             Err(warnings)
         }
+    }
+
+    fn active_filters(&self, locale: &str) -> Vec<Box<LinterFilter>> {
+        self.filters()
+            .into_iter()
+            .filter(|filter| filter.locales().is_empty() || filter.locales().contains(&locale))
+            .collect()
+    }
+
+    fn filters(&self) -> Vec<Box<LinterFilter>> {
+        vec![
+            Box::new(CurlyApostropheFilter {}),
+            Box::new(EllipsisSymbolFilter {}),
+            Box::new(NoSpaceBeforeCommaFilter {}),
+            Box::new(SpaceBeforeDoublePonctuationFilter {}),
+        ]
     }
 }
 
