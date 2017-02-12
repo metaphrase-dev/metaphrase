@@ -29,6 +29,7 @@ impl Linter {
         let filters: Vec<Box<LinterFilter>> = vec![
             Box::new(CurlyApostropheFilter {}),
             Box::new(EllipsisSymbolFilter {}),
+            Box::new(NoSpaceBeforeCommaFilter {}),
             Box::new(SpaceBeforeDoublePonctuationFilter {}),
         ];
 
