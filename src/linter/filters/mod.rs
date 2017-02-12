@@ -1,10 +1,12 @@
 pub mod curly_apostrophe_filter;
 pub mod ellipsis_symbol_filter;
+pub mod space_before_double_ponctuation_filter;
 
 use super::*;
 
 pub use self::curly_apostrophe_filter::CurlyApostropheFilter;
 pub use self::ellipsis_symbol_filter::EllipsisSymbolFilter;
+pub use self::space_before_double_ponctuation_filter::SpaceBeforeDoublePonctuationFilter;
 
 pub trait LinterFilter {
     fn check(&self, text: &str) -> Result<(), Vec<LinterWarning>> {

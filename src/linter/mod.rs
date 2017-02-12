@@ -29,6 +29,7 @@ impl Linter {
         let filters: Vec<Box<LinterFilter>> = vec![
             Box::new(CurlyApostropheFilter {}),
             Box::new(EllipsisSymbolFilter {}),
+            Box::new(SpaceBeforeDoublePonctuationFilter {}),
         ];
 
         let active_filters = filters
@@ -58,8 +59,8 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_linter_with_straight_apostrophe_and_three_dots() {
-        let linter = Linter::new("fr".to_string()).unwrap();
+    fn test_linter_with_two_warnings() {
+        let linter = Linter::new("en".to_string()).unwrap();
 
         let result = linter.check("It's me...");
 
@@ -79,10 +80,39 @@ mod tests {
     }
 
     #[test]
-    fn test_linter_with_curly_apostrophe_and_ellipsis_symbol() {
-        let linter = Linter::new("fr".to_string()).unwrap();
+    fn test_linter_with_no_warning() {
+        let linter = Linter::new("en".to_string()).unwrap();
 
         let result = linter.check("It’s me…");
+
+        assert_eq!(false, result.is_err());
+        assert_eq!((), result.unwrap());
+    }
+
+    #[test]
+    fn test_linter_with_a_language_specific_warning() {
+        let linter = Linter::new("fr".to_string()).unwrap();
+
+        let result = linter.check("C’est moi!");
+
+        assert!(result.is_err());
+
+        let warnings = result.err().unwrap();
+
+        assert_eq!(1, warnings.len());
+        assert_eq!(
+            "Please use a non-breaking space before “double” ponctuation marks: `;`, `:`, `!`, `?`.",
+            warnings[0].message
+        );
+        assert_eq!(10, warnings[0].start);
+        assert_eq!(12, warnings[0].end);
+    }
+
+    #[test]
+    fn test_linter_with_a_language_specific_filter_and_no_warning() {
+        let linter = Linter::new("en".to_string()).unwrap();
+
+        let result = linter.check("It’s me!");
 
         assert_eq!(false, result.is_err());
         assert_eq!((), result.unwrap());
