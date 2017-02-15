@@ -12,6 +12,7 @@ extern crate rustc_serialize;
 extern crate simplelog;
 extern crate staticfile;
 extern crate time;
+extern crate typographic_linter;
 
 use iron::prelude::*;
 use staticfile::Static;
@@ -25,7 +26,6 @@ mod authentication;
 mod database;
 mod errors;
 mod schema;
-mod linter;
 mod logger;
 mod models;
 
