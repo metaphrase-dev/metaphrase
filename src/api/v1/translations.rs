@@ -54,7 +54,8 @@ pub fn index(_: &mut Request) -> IronResult<Response> {
 
 pub fn create(request: &mut Request) -> IronResult<Response> {
     use diesel;
-    use linter::*;
+    use typographic_linter::Linter;
+    use typographic_linter::errors::LinterWarning;
     use schema::translations;
 
     #[derive(RustcEncodable)]
