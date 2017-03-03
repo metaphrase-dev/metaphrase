@@ -62,7 +62,7 @@ pub fn create_user(new_email: &str, new_password: &str) -> Result<User, LughErro
     Ok(inserted_user)
 }
 
-pub fn delete_session(token_to_delete: String) -> Result<(), LughError> {
+pub fn delete_session(token_to_delete: &str) -> Result<(), LughError> {
     use diesel;
     use schema::sessions::dsl::*;
 
@@ -243,9 +243,7 @@ mod tests {
 
     #[test]
     fn test_delete_session_when_success() {
-        let token = "tokentodelete".to_string();
-
-        let result = delete_session(token);
+        let result = delete_session("tokentodelete");
 
         assert_eq!(false, result.is_err());
         assert_eq!((), result.unwrap());
@@ -253,9 +251,7 @@ mod tests {
 
     #[test]
     fn test_delete_session_when_token_does_not_exist() {
-        let token = "nonexistingtoken".to_string();
-
-        let result = delete_session(token);
+        let result = delete_session("nonexistingtoken");
 
         assert!(result.is_err());
         assert_eq!(LughError::NotFound("No session were deleted".to_string()), result.err().unwrap())

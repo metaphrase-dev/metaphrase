@@ -30,7 +30,7 @@ pub fn logout(request: &mut Request) -> IronResult<Response> {
 
     let current_session = request.extensions.get::<Session>().unwrap();
 
-    delete_session(current_session.token.to_string())?;
+    delete_session(current_session.token.as_str())?;
 
     Ok(Response::with((ContentType::json().0, status::NoContent)))
 }

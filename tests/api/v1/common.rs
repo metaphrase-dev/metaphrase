@@ -3,7 +3,7 @@ use hyper::client::Response;
 use hyper::header::Headers;
 use std::io::Read;
 
-pub fn delete(path: &'static str, token: Option<String>) -> (Response, String) {
+pub fn delete(path: &'static str, token: &Option<String>) -> (Response, String) {
     let mut response = Client::new()
         .delete(&url(path))
         .headers(headers(token))
@@ -16,7 +16,7 @@ pub fn delete(path: &'static str, token: Option<String>) -> (Response, String) {
     (response, content)
 }
 
-pub fn get(path: &'static str, token: Option<String>) -> (Response, String) {
+pub fn get(path: &'static str, token: &Option<String>) -> (Response, String) {
     let mut response = Client::new()
         .get(&url(path))
         .headers(headers(token))
@@ -29,13 +29,13 @@ pub fn get(path: &'static str, token: Option<String>) -> (Response, String) {
     (response, result)
 }
 
-pub fn post(path: &'static str, body: Option<String>, token: Option<String>) -> (Response, String) {
+pub fn post(path: &'static str, body: &Option<String>, token: &Option<String>) -> (Response, String) {
     let client = Client::new();
 
     let mut request = client.post(&url(path))
         .headers(headers(token));
 
-    request = match body {
+    request = match *body {
         Some(ref body) => request.body(body),
         None => request,
     };
@@ -71,14 +71,14 @@ pub fn has_happened_now(time_str: &str) -> bool {
     time > min && time <= now
 }
 
-fn headers(token: Option<String>) -> Headers {
+fn headers(token: &Option<String>) -> Headers {
     use hyper::header::{Authorization, Bearer, ContentType, Headers};
     use hyper::mime::{Mime, TopLevel, SubLevel, Attr, Value};
 
     let mut headers = Headers::new();
 
-    if let Some(token) = token {
-        headers.set(Authorization(Bearer { token: token }))
+    if let Some(ref token) = *token {
+        headers.set(Authorization(Bearer { token: token.to_string() }))
     }
 
     headers.set(

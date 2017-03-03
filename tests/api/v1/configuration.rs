@@ -12,7 +12,7 @@ mod tests {
 
     #[test]
     fn test_get_configuration_without_token() {
-        let (response, content) = get("/api/v1/configuration", None);
+        let (response, content) = get("/api/v1/configuration", &None);
 
         assert_eq!(StatusCode::Unauthorized, response.status);
         assert_eq!("", content)
@@ -20,7 +20,7 @@ mod tests {
 
     #[test]
     fn test_get_configuration_with_success() {
-        let (response, content) = get("/api/v1/configuration", valid_token());
+        let (response, content) = get("/api/v1/configuration", &valid_token());
         let configuration = parse_configuration(&content);
 
         assert_eq!(StatusCode::Ok, response.status);

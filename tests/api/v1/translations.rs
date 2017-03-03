@@ -58,7 +58,7 @@ mod tests {
 
     #[test]
     fn test_create_without_body() {
-        let (response, content) = post("/api/v1/translations", None, valid_token());
+        let (response, content) = post("/api/v1/translations", &None, &valid_token());
 
         assert_eq!(StatusCode::BadRequest, response.status);
         assert_eq!("", content)
@@ -72,7 +72,7 @@ mod tests {
             content: Some("I love train"),
         };
 
-        let (response, content) = post_translation(new_translation, None);
+        let (response, content) = post_translation(&new_translation, &None);
 
         assert_eq!(StatusCode::Unauthorized, response.status);
         assert_eq!("", content)
@@ -86,7 +86,7 @@ mod tests {
             content: Some("I love train"),
         };
 
-        let (response, _) = post_translation(new_translation, valid_token());
+        let (response, _) = post_translation(&new_translation, &valid_token());
 
         assert_eq!(StatusCode::BadRequest, response.status);
     }
@@ -99,7 +99,7 @@ mod tests {
             content: Some("I love train"),
         };
 
-        let (response, _) = post_translation(new_translation, valid_token());
+        let (response, _) = post_translation(&new_translation, &valid_token());
 
         assert_eq!(StatusCode::BadRequest, response.status);
     }
@@ -112,7 +112,7 @@ mod tests {
             content: None,
         };
 
-        let (response, _) = post_translation(new_translation, valid_token());
+        let (response, _) = post_translation(&new_translation, &valid_token());
 
         assert_eq!(StatusCode::BadRequest, response.status);
     }
@@ -120,7 +120,7 @@ mod tests {
     #[test]
     fn test_insert_and_delete() {
         // We fetch all translations
-        let (response, content) = get("/api/v1/translations", valid_token());
+        let (response, content) = get("/api/v1/translations", &valid_token());
 
         assert_eq!(StatusCode::Ok, response.status);
 
@@ -131,12 +131,12 @@ mod tests {
 
         // We create new translations on key `test.hello`
         let (response, content) = post_translation(
-            NewTranslation {
+            &NewTranslation {
                 key: Some("test.hello"),
                 locale: Some("fr"),
                 content: Some("Bonjour"),
             },
-            valid_token()
+            &valid_token()
         );
 
         assert_eq!(StatusCode::Created, response.status);
@@ -153,12 +153,12 @@ mod tests {
         assert_eq!(true, create_response.warnings.is_empty());
 
         let (response, content) = post_translation(
-            NewTranslation {
+            &NewTranslation {
                 key: Some("test.hello"),
                 locale: Some("en"),
                 content: Some("Hello"),
             },
-            valid_token()
+            &valid_token()
         );
 
         assert_eq!(StatusCode::Created, response.status);
@@ -176,12 +176,12 @@ mod tests {
 
         // We insert a translation with 2 linter warnings
         let (response, content) = post_translation(
-            NewTranslation {
+            &NewTranslation {
                 key: Some("test.me"),
                 locale: Some("en"),
                 content: Some("It's me..."),
             },
-            valid_token()
+            &valid_token()
         );
 
         assert_eq!(StatusCode::Created, response.status);
@@ -207,7 +207,7 @@ mod tests {
         assert_eq!(10, warnings[1].end);
 
         // We fetch all translations
-        let (response, content) = get("/api/v1/translations", valid_token());
+        let (response, content) = get("/api/v1/translations", &valid_token());
 
         assert_eq!(StatusCode::Ok, response.status);
 
@@ -219,14 +219,14 @@ mod tests {
         assert_eq!(1, translations_2.get(&"test.me".to_string()).unwrap().len());
 
         // We delete all translations with key equals to `test.hello`
-        let (response, content) = delete("/api/v1/translations/test.hello", valid_token());
+        let (response, content) = delete("/api/v1/translations/test.hello", &valid_token());
         let result: DeletedResult = json::decode(&content).unwrap();
 
         assert_eq!(StatusCode::Ok, response.status);
         assert_eq!(2, result.deleted_translations);
 
         // We fetch all translations
-        let (response, content) = get("/api/v1/translations", valid_token());
+        let (response, content) = get("/api/v1/translations", &valid_token());
 
         assert_eq!(StatusCode::Ok, response.status);
 
@@ -237,7 +237,7 @@ mod tests {
         assert_eq!(1, translations_3.get(&"test.me".to_string()).unwrap().len());
 
         // We fetch all translations with key `test.hello`
-        let (response, content) = get("/api/v1/translations/test.hello", valid_token());
+        let (response, content) = get("/api/v1/translations/test.hello", &valid_token());
 
         assert_eq!(StatusCode::Ok, response.status);
 
@@ -252,7 +252,7 @@ mod tests {
 
     #[test]
     fn test_validate_without_token() {
-        let (response, content) = post("/api/v1/translations/1/validate", None, None);
+        let (response, content) = post("/api/v1/translations/1/validate", &None, &None);
 
         assert_eq!(StatusCode::Unauthorized, response.status);
         assert_eq!("", content);
@@ -260,7 +260,7 @@ mod tests {
 
     #[test]
     fn test_validate_when_not_found() {
-        let (response, content) = post("/api/v1/translations/999999/validate", None, valid_token());
+        let (response, content) = post("/api/v1/translations/999999/validate", &None, &valid_token());
 
         assert_eq!(StatusCode::NotFound, response.status);
         assert_eq!("", content);
@@ -269,7 +269,7 @@ mod tests {
     #[test]
     fn test_validate_with_success() {
         // We fetch all translations
-        let (response, content) = get("/api/v1/translations", valid_token());
+        let (response, content) = get("/api/v1/translations", &valid_token());
 
         assert_eq!(StatusCode::Ok, response.status);
 
@@ -281,13 +281,13 @@ mod tests {
         }
 
         // We validate the first translation
-        let (response, content) = post("/api/v1/translations/1/validate", None, valid_token());
+        let (response, content) = post("/api/v1/translations/1/validate", &None, &valid_token());
 
         assert_eq!(StatusCode::NoContent, response.status);
         assert_eq!("", content);
 
         // We fetch all translations
-        let (response, content) = get("/api/v1/translations", valid_token());
+        let (response, content) = get("/api/v1/translations", &valid_token());
 
         assert_eq!(StatusCode::Ok, response.status);
 
@@ -314,7 +314,7 @@ mod tests {
 
     #[test]
     fn test_delete_without_token() {
-        let (response, content) = delete("/api/v1/translations/hey.you", None);
+        let (response, content) = delete("/api/v1/translations/hey.you", &None);
 
         assert_eq!(StatusCode::Unauthorized, response.status);
         assert_eq!("", content);
@@ -322,7 +322,7 @@ mod tests {
 
     #[test]
     fn test_delete_with_a_key_without_translations() {
-        let (response, content) = delete("/api/v1/translations/not.found.key", valid_token());
+        let (response, content) = delete("/api/v1/translations/not.found.key", &valid_token());
         let result: DeletedResult = json::decode(&content).unwrap();
 
         assert_eq!(StatusCode::NotFound, response.status);
@@ -341,9 +341,9 @@ mod tests {
         json::decode(content).unwrap()
     }
 
-    fn post_translation(translation: NewTranslation, token: Option<String>) -> (Response, String) {
+    fn post_translation(translation: &NewTranslation, token: &Option<String>) -> (Response, String) {
         let body = json::encode(&translation).unwrap();
 
-        post("/api/v1/translations", Some(body), token)
+        post("/api/v1/translations", &Some(body), token)
     }
 }
