@@ -14,7 +14,7 @@ mod tests {
 
     #[test]
     fn test_create_without_body() {
-        let (response, content) = post("/api/v1/users", None, valid_token());
+        let (response, content) = post("/api/v1/users", &None, &valid_token());
 
         assert_eq!(StatusCode::BadRequest, response.status);
         assert_eq!("", content)
@@ -27,7 +27,7 @@ mod tests {
             password: Some("p4ssw0rd"),
         };
 
-        let (response, content) = post_user(new_user, None);
+        let (response, content) = post_user(&new_user, &None);
 
         assert_eq!(StatusCode::Unauthorized, response.status);
         assert_eq!("", content);
@@ -40,7 +40,7 @@ mod tests {
             password: Some("p4ssw0rd"),
         };
 
-        let (response, _) = post_user(new_user, valid_token());
+        let (response, _) = post_user(&new_user, &valid_token());
 
         assert_eq!(StatusCode::BadRequest, response.status);
     }
@@ -52,7 +52,7 @@ mod tests {
             password: None,
         };
 
-        let (response, _) = post_user(new_user, valid_token());
+        let (response, _) = post_user(&new_user, &valid_token());
 
         assert_eq!(StatusCode::BadRequest, response.status);
     }
@@ -64,14 +64,14 @@ mod tests {
             password: Some("p4ssw0rd"),
         };
 
-        let (response, _) = post_user(new_user, valid_token());
+        let (response, _) = post_user(&new_user, &valid_token());
 
         assert_eq!(StatusCode::Created, response.status);
     }
 
-    fn post_user(user: NewUser, token: Option<String>) -> (Response, String) {
+    fn post_user(user: &NewUser, token: &Option<String>) -> (Response, String) {
         let body = json::encode(&user).unwrap();
 
-        post("/api/v1/users", Some(body), token)
+        post("/api/v1/users", &Some(body), token)
     }
 }
