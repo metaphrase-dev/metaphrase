@@ -1,7 +1,7 @@
 use iron::headers::ContentType;
 use iron::prelude::*;
 use iron::status;
-use rustc_serialize::json;
+use serde_json;
 
 use authentication::{authenticate_user, delete_session};
 use super::common::*;
@@ -20,7 +20,7 @@ pub fn login(request: &mut Request) -> IronResult<Response> {
         expired_at: session.expired_at,
     };
 
-    let payload = json::encode(&new_session).unwrap();
+    let payload = serde_json::to_string(&new_session).unwrap();
 
     Ok(Response::with((ContentType::json().0, status::Created, payload)))
 }

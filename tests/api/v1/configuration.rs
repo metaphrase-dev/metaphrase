@@ -3,9 +3,9 @@ mod tests {
     use super::super::common::*;
 
     use hyper::status::StatusCode;
-    use rustc_serialize::json;
+    use serde_json;
 
-    #[derive(RustcDecodable)]
+    #[derive(Deserialize)]
     struct Configuration {
         locales: Vec<String>,
     }
@@ -28,6 +28,6 @@ mod tests {
     }
 
     fn parse_configuration(content: &str) -> Configuration {
-        json::decode(content).unwrap()
+        serde_json::from_str(content).unwrap()
     }
 }

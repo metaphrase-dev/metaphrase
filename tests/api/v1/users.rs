@@ -4,9 +4,9 @@ mod tests {
 
     use hyper::client::Response;
     use hyper::status::StatusCode;
-    use rustc_serialize::json;
+    use serde_json;
 
-    #[derive(RustcEncodable)]
+    #[derive(Serialize)]
     struct NewUser {
         email: Option<&'static str>,
         password: Option<&'static str>,
@@ -70,7 +70,7 @@ mod tests {
     }
 
     fn post_user(user: &NewUser, token: &Option<String>) -> (Response, String) {
-        let body = json::encode(&user).unwrap();
+        let body = serde_json::to_string(&user).unwrap();
 
         post("/api/v1/users", &Some(body), token)
     }

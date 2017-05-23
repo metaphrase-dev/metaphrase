@@ -6,7 +6,7 @@ use diesel::prelude::*;
 use diesel::sqlite::SqliteConnection;
 use errors::*;
 use models::*;
-use rustc_serialize::json;
+use serde_json;
 use schema::translations::dsl::*;
 
 use database;
@@ -47,7 +47,7 @@ pub fn index(_: &mut Request) -> IronResult<Response> {
 
     debug!("Returns {} translations", all_translations.len());
 
-    let payload = json::encode(&all_translations).unwrap();
+    let payload = serde_json::to_string(&all_translations).unwrap();
 
     Ok(Response::with((ContentType::json().0, status::Ok, payload)))
 }
@@ -58,7 +58,7 @@ pub fn create(request: &mut Request) -> IronResult<Response> {
     use typographic_linter::errors::LinterWarning;
     use schema::translations;
 
-    #[derive(RustcEncodable)]
+    #[derive(Serialize)]
     struct CreateTranslationResponse {
         translation: Translation,
         warnings: Vec<LinterWarning>,
@@ -102,7 +102,7 @@ pub fn create(request: &mut Request) -> IronResult<Response> {
         response.warnings = linter.err().unwrap();
     }
 
-    let payload = json::encode(&response).unwrap();
+    let payload = serde_json::to_string(&response).unwrap();
 
     Ok(Response::with((ContentType::json().0, status::Created, payload)))
 }
@@ -120,7 +120,7 @@ pub fn show(request: &mut Request) -> IronResult<Response> {
 
     debug!("Returns {} translations", all_translations.len());
 
-    let payload = json::encode(&all_translations).unwrap();
+    let payload = serde_json::to_string(&all_translations).unwrap();
 
     Ok(Response::with((ContentType::json().0, status::Ok, payload)))
 }
@@ -175,12 +175,12 @@ pub fn delete(request: &mut Request) -> IronResult<Response> {
         .execute(&connection)
         .expect(&format!("Unable to delete translations with key={}", &key_to_delete));
 
-    #[derive(RustcEncodable)]
+    #[derive(Serialize)]
     struct DeletedResult {
         deleted_translations: usize,
     };
 
-    let payload = json::encode(&DeletedResult { deleted_translations: deleted }).unwrap();
+    let payload = serde_json::to_string(&DeletedResult { deleted_translations: deleted }).unwrap();
 
     let status = match deleted {
         0 => status::NotFound,

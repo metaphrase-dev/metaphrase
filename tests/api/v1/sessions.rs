@@ -4,15 +4,15 @@ mod tests {
 
     use hyper::client::Response;
     use hyper::status::StatusCode;
-    use rustc_serialize::json;
+    use serde_json;
 
-    #[derive(RustcEncodable)]
+    #[derive(Serialize)]
     struct LoginParams {
         email: Option<&'static str>,
         password: Option<&'static str>,
     }
 
-    #[derive(RustcDecodable)]
+    #[derive(Deserialize)]
     struct Session {
         token: String,
         user_id: i32,
@@ -76,7 +76,7 @@ mod tests {
 
         assert_eq!(StatusCode::Created, response.status);
 
-        let session: Session = json::decode(&content).unwrap();
+        let session: Session = serde_json::from_str(&content).unwrap();
 
         assert_eq!(64, session.token.len());
         assert_eq!(1, session.user_id);
@@ -105,7 +105,7 @@ mod tests {
     }
 
     fn login(params: &LoginParams) -> (Response, String) {
-        let body = json::encode(&params).unwrap();
+        let body = serde_json::to_string(&params).unwrap();
 
         post("/api/v1/login", &Some(body), &None)
     }
