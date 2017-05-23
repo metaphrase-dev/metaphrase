@@ -2,7 +2,7 @@ use errors::*;
 use iron::typemap;
 use schema::*;
 
-#[derive(Insertable, RustcEncodable)]
+#[derive(Insertable, Serialize)]
 #[table_name="sessions"]
 pub struct NewSession {
     pub token: String,
@@ -61,7 +61,7 @@ pub struct Setting {
     pub updated_at: String,
 }
 
-#[derive(RustcEncodable)]
+#[derive(Serialize)]
 pub struct TranslationForLocale {
     pub id: i32,
     pub locale: String,
@@ -72,7 +72,7 @@ pub struct TranslationForLocale {
     pub validated_at: Option<String>,
 }
 
-#[derive(AsChangeset, Queryable, RustcEncodable)]
+#[derive(AsChangeset, Queryable, Serialize)]
 pub struct Translation {
     pub id: i32,
     pub key: String,

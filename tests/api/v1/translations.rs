@@ -4,29 +4,29 @@ mod tests {
 
     use hyper::client::Response;
     use hyper::status::StatusCode;
-    use rustc_serialize::json;
+    use serde_json;
     use std::collections::HashMap;
 
-    #[derive(RustcDecodable)]
+    #[derive(Deserialize)]
     struct DeletedResult {
         deleted_translations: usize,
     }
 
-    #[derive(RustcEncodable)]
+    #[derive(Serialize)]
     struct NewTranslation {
         key: Option<&'static str>,
         locale: Option<&'static str>,
         content: Option<&'static str>,
     }
 
-    #[derive(RustcDecodable)]
+    #[derive(Deserialize)]
     pub struct LinterWarning {
         pub message: String,
         pub start: usize,
         pub end: usize,
     }
 
-    #[derive(Clone, RustcDecodable)]
+    #[derive(Clone, Deserialize)]
     struct TranslationForLocale {
         id: i32,
         locale: String,
@@ -37,13 +37,13 @@ mod tests {
         validated_at: Option<String>,
     }
 
-    #[derive(RustcDecodable)]
+    #[derive(Deserialize)]
     struct CreateTranslationResponse {
         translation: Translation,
         warnings: Vec<LinterWarning>,
     }
 
-    #[derive(RustcDecodable)]
+    #[derive(Deserialize)]
     pub struct Translation {
         pub id: i32,
         pub key: String,
@@ -220,7 +220,7 @@ mod tests {
 
         // We delete all translations with key equals to `test.hello`
         let (response, content) = delete("/api/v1/translations/test.hello", &valid_token());
-        let result: DeletedResult = json::decode(&content).unwrap();
+        let result: DeletedResult = serde_json::from_str(&content).unwrap();
 
         assert_eq!(StatusCode::Ok, response.status);
         assert_eq!(2, result.deleted_translations);
@@ -323,26 +323,26 @@ mod tests {
     #[test]
     fn test_delete_with_a_key_without_translations() {
         let (response, content) = delete("/api/v1/translations/not.found.key", &valid_token());
-        let result: DeletedResult = json::decode(&content).unwrap();
+        let result: DeletedResult = serde_json::from_str(&content).unwrap();
 
         assert_eq!(StatusCode::NotFound, response.status);
         assert_eq!(0, result.deleted_translations);
     }
 
     fn parse_translations_by_locales(content: &str) -> HashMap<String, Vec<TranslationForLocale>> {
-        json::decode(content).unwrap()
+        serde_json::from_str(content).unwrap()
     }
 
     fn parse_create_translation(content: &str) -> CreateTranslationResponse {
-        json::decode(content).unwrap()
+        serde_json::from_str(content).unwrap()
     }
 
     fn parse_translations(content: &str) -> Vec<Translation> {
-        json::decode(content).unwrap()
+        serde_json::from_str(content).unwrap()
     }
 
     fn post_translation(translation: &NewTranslation, token: &Option<String>) -> (Response, String) {
-        let body = json::encode(&translation).unwrap();
+        let body = serde_json::to_string(&translation).unwrap();
 
         post("/api/v1/translations", &Some(body), token)
     }

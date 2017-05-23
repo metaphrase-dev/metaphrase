@@ -2,11 +2,11 @@ use diesel::prelude::*;
 use iron::headers::ContentType;
 use iron::prelude::*;
 use iron::status;
-use rustc_serialize::json;
 use std::collections::HashMap;
 
 use database;
 use models::*;
+use serde_json;
 use schema::settings::dsl::*;
 
 pub fn index(_: &mut Request) -> IronResult<Response> {
@@ -24,7 +24,7 @@ pub fn index(_: &mut Request) -> IronResult<Response> {
         settings_for_key.push(setting.value.clone());
     }
 
-    let payload = json::encode(&configuration).unwrap();
+    let payload = serde_json::to_string(&configuration).unwrap();
 
     Ok(Response::with((ContentType::json().0, status::Ok, payload)))
 }
