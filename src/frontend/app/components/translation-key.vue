@@ -8,6 +8,9 @@
     --><i class="fa fa-fw fa-file-o" style="margin-right: 3px" v-if="index == crumbs.length - 1"></i><!--
     -->{{ crumb }}<!--
     --></span>
+    <button class="translation-key-delete" @click="deleteTranslation">
+      <i class="fa fa-fw fa-trash-o" />
+    </button>
   </div>
 </template>
 
@@ -22,6 +25,24 @@
     computed: {
       crumbs() {
         return this.translationKey.split('.');
+      }
+    },
+
+    methods: {
+      deleteTranslation() {
+        let confirmation = window.confirm(`You will destroy ${this.translationKey}; are you sure?`);
+
+        if (confirmation) {
+          this.$root.$data.callApi(`/api/v1/translations/${this.translationKey}`, 'DELETE').then(response => {
+            if (response.ok) {
+              return response.json();
+            } else {
+              window.alert("An error occured while deleting the translation.");
+            }
+          }).then(data => {
+            this.$root.$data.fetchTranslations();
+          });
+        }
       }
     }
   });
