@@ -145,7 +145,7 @@
               //       translation store.
               this.store.fetchTranslations();
 
-              this.updateNamespace(data.key);
+              this.updateNamespace(data.translation.key);
             });
 
           this.resetModal();
