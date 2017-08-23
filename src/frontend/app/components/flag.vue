@@ -22,3 +22,12 @@
     }
   });
 </script>
+
+<style>
+  .flag-icon {
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+    border-radius: 2px;
+    vertical-align: 0;
+    opacity: 0.75;
+  }
+</style>

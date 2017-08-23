@@ -24,6 +24,7 @@
     </form>
   </div>
 </template>
+
 <script>
   export default {
     name: 'add-new-key-modal',

@@ -25,3 +25,12 @@
     }
   });
 </script>
+
+<style>
+  .translation-group {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    border-bottom: 1px solid grey;
+  }
+</style>
