@@ -65,7 +65,7 @@ export default class {
       .then(response => {
         if(response.ok) {
           return response.json();
-        } else if (response.status == 401 || response.status == 403) {
+        } else if (response.status === 401 || response.status === 403) {
           this.resetToken();
         } else {
           console.error(`Received ${response.status} status while fetching translations, aborting`);
