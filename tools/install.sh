@@ -18,7 +18,7 @@ command -v rustup >/dev/null 2>&1 || { echo 'I require `rustup` but it’s not i
 rustup override set stable
 
 # diesel_cli
-cargo install diesel_cli --force
+cargo install diesel_cli --no-default-features --features "sqlite" --force
 
 # brunch
 if [[ "$OSTYPE" == "linux-gnu" ]]; then
