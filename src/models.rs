@@ -1,9 +1,8 @@
-use errors::*;
-use iron::typemap;
-use schema::*;
+use super::errors::*;
+use super::schema::*;
 
 #[derive(Insertable, Serialize)]
-#[table_name="sessions"]
+#[table_name = "sessions"]
 pub struct NewSession {
     pub token: String,
     pub user_id: i32,
@@ -11,7 +10,7 @@ pub struct NewSession {
 }
 
 #[derive(Insertable)]
-#[table_name="translations"]
+#[table_name = "translations"]
 pub struct NewTranslation {
     pub key: String,
     pub locale: String,
@@ -20,7 +19,7 @@ pub struct NewTranslation {
 }
 
 #[derive(Insertable)]
-#[table_name="users"]
+#[table_name = "users"]
 pub struct NewUser {
     pub email: String,
     pub hashed_password: String,
@@ -37,20 +36,20 @@ pub struct Session {
 
 impl Session {
     pub fn user(&self) -> Result<User, LughError> {
-        use database;
+        use super::database;
+        use super::schema::users::dsl::*;
         use diesel::prelude::*;
-        use schema::users::dsl::*;
 
         let connection = database::establish_connection()?;
 
         match users.find(&self.user_id).first::<User>(&connection) {
             Ok(user) => Ok(user),
-            Err(_) => Err(LughError::NotFound("User not found for this Session".to_string())),
+            Err(_) => Err(LughError::NotFound(
+                "User not found for this Session".to_string(),
+            )),
         }
     }
 }
-
-impl typemap::Key for Session { type Value = Session; }
 
 #[derive(Queryable)]
 pub struct Setting {
@@ -91,7 +90,6 @@ pub struct User {
     pub email: String,
     pub hashed_password: String,
     pub created_at: String,
-
 }
 
 #[cfg(test)]
@@ -103,7 +101,10 @@ mod tests {
         let result = session_for_user_id(999999).user();
 
         assert!(result.is_err());
-        assert_eq!(LughError::NotFound("User not found for this Session".to_string()), result.err().unwrap())
+        assert_eq!(
+            LughError::NotFound("User not found for this Session".to_string()),
+            result.err().unwrap()
+        )
     }
 
     #[test]
@@ -115,9 +116,9 @@ mod tests {
     }
 
     fn session_for_user_id(user_id: i32) -> Session {
-        use time::{now_utc, strftime};
+        use time::OffsetDateTime;
 
-        let now = strftime("%F %T", &now_utc()).unwrap();
+        let now = (&OffsetDateTime::now_utc()).format("%F %T");
 
         Session {
             id: 1,

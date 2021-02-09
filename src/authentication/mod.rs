@@ -1,7 +1,7 @@
-use errors::*;
-use database;
-use diesel::prelude::*;
-use models::*;
+use crate::database;
+use crate::errors::*;
+use crate::models::*;
+use diesel::{dsl::sql, prelude::*};
 
 pub mod middleware;
 
@@ -16,30 +16,31 @@ pub fn authenticate_user(email: &str, password: &str) -> Result<(User, Session),
 }
 
 pub fn authenticate_token(auth_token: &str) -> Result<Session, LughError> {
-    use schema::sessions::dsl::*;
-    use time;
+    use crate::schema::sessions::dsl::*;
 
     let connection = database::establish_connection()?;
 
-    match sessions.filter(token.eq(auth_token)).first::<Session>(&connection) {
+    match sessions
+        .filter(token.eq(auth_token))
+        .first::<Session>(&connection)
+    {
         Ok(session) => {
-            let session_expired_at = time::strptime(session.expired_at.as_str(), "%F %T").unwrap();
+            let session_expired_at =
+                time::PrimitiveDateTime::parse(session.expired_at.as_str(), "%F %T").unwrap();
 
-            if session_expired_at > time::now_utc() {
+            if session_expired_at.assume_utc() > time::OffsetDateTime::now_utc() {
                 Ok(session)
             } else {
                 Err(LughError::Unauthorized("Session expired".to_string()))
             }
-        },
+        }
         Err(_) => Err(LughError::Unauthorized("Session not found".to_string())),
     }
 }
 
 pub fn create_user(new_email: &str, new_password: &str) -> Result<User, LughError> {
-    use diesel;
-    use diesel::expression::dsl::sql;
-    use schema::users::dsl::*;
-    use schema::users::table;
+    use crate::schema::users::dsl::*;
+    use crate::schema::users::table;
 
     let new_hashed_password = hash_password(new_password)?;
 
@@ -50,12 +51,13 @@ pub fn create_user(new_email: &str, new_password: &str) -> Result<User, LughErro
 
     let connection = database::establish_connection()?;
 
-    diesel::insert(&new_user)
-        .into(table)
+    diesel::insert_into(table)
+        .values(&new_user)
         .execute(&connection)
         .expect("Error saving new user");
 
-    let inserted_user = users.filter(id.eq(sql("last_insert_rowid()")))
+    let inserted_user = users
+        .filter(id.eq(sql("last_insert_rowid()")))
         .get_result::<User>(&connection)
         .expect("Error getting inserted user");
 
@@ -63,65 +65,69 @@ pub fn create_user(new_email: &str, new_password: &str) -> Result<User, LughErro
 }
 
 pub fn delete_session(token_to_delete: &str) -> Result<(), LughError> {
-    use diesel;
-    use schema::sessions::dsl::*;
+    use crate::schema::sessions::dsl::*;
 
     let connection = database::establish_connection()?;
 
-    let deleted = diesel::delete(
-        sessions.filter(
-            token.eq(&token_to_delete)
-        )
-    ).execute(&connection)?;
+    let deleted =
+        diesel::delete(sessions.filter(token.eq(&token_to_delete))).execute(&connection)?;
 
     match deleted {
         0 => Err(LughError::NotFound("No session were deleted".to_string())),
-        _ => Ok(())
+        _ => Ok(()),
     }
 }
 
 pub fn retrieve_user(user_email: &str) -> Result<User, LughError> {
-    use schema::users::dsl::*;
+    use crate::schema::users::dsl::*;
 
     let connection = database::establish_connection()?;
 
-    match users.filter(email.eq(user_email)).first::<User>(&connection) {
+    match users
+        .filter(email.eq(user_email))
+        .first::<User>(&connection)
+    {
         Ok(user) => Ok(user),
-        Err(_) => Err(LughError::NotFound(format!("User not found with email={}", user_email))),
+        Err(_) => Err(LughError::NotFound(format!(
+            "User not found with email={}",
+            user_email
+        ))),
     }
 }
 
 fn create_session(user: &User) -> Result<Session, LughError> {
-    use diesel;
-    use diesel::expression::dsl::sql;
-    use schema::sessions::dsl::*;
-    use schema::sessions::table;
-    use time::{Duration, now_utc, strftime};
+    use crate::schema::sessions::dsl::*;
+    use crate::schema::sessions::table;
+    use time::Duration;
 
     let connection = database::establish_connection()?;
 
-    let now = now_utc();
+    let now = time::OffsetDateTime::now_utc();
     let session_expired_at = now + Duration::days(7);
 
     let new_session = NewSession {
         token: generate_token()?,
         user_id: user.id,
-        expired_at: strftime("%F %T", &session_expired_at)?,
+        expired_at: session_expired_at.format("%F %T"),
     };
 
-    diesel::insert(&new_session).into(table).execute(&connection)?;
+    diesel::insert_into(table)
+        .values(&new_session)
+        .execute(&connection)?;
 
-    let session = sessions.filter(id.eq(sql("last_insert_rowid()"))).get_result::<Session>(&connection)?;
+    let session = sessions
+        .filter(id.eq(sql("last_insert_rowid()")))
+        .get_result::<Session>(&connection)?;
 
     Ok(session)
 }
 
 fn generate_token() -> Result<String, LughError> {
-    use rand;
+    use rand::distributions::Alphanumeric;
     use rand::Rng;
 
     let token = rand::thread_rng()
-        .gen_ascii_chars()
+        .sample_iter(&Alphanumeric)
         .take(64)
         .collect();
 
@@ -143,7 +149,10 @@ fn verify_password(user: &User, password: &str) -> Result<(), LughError> {
     if bcrypt::verify(password, user.hashed_password.as_str()) {
         Ok(())
     } else {
-        Err(LughError::Unauthorized(format!("Authentication failed for user with email={}", user.email)))
+        Err(LughError::Unauthorized(format!(
+            "Authentication failed for user with email={}",
+            user.email
+        )))
     }
 }
 
@@ -169,9 +178,10 @@ mod tests {
         assert_eq!(64, session.token.len());
         assert_eq!(1, session.user_id);
 
-        let expired_at = time::strptime(session.expired_at.as_str(), "%F %T").unwrap();
+        let expired_at =
+            time::PrimitiveDateTime::parse(session.expired_at.as_str(), "%F %T").unwrap();
 
-        assert!(expired_at > time::now_utc());
+        assert!(expired_at.assume_utc() > time::OffsetDateTime::now_utc());
     }
 
     #[test]
@@ -182,7 +192,10 @@ mod tests {
         let result = authenticate_user(&email, &password);
 
         assert!(result.is_err());
-        assert_eq!(LughError::NotFound(format!("User not found with email={}", email)), result.err().unwrap())
+        assert_eq!(
+            LughError::NotFound(format!("User not found with email={}", email)),
+            result.err().unwrap()
+        )
     }
 
     #[test]
@@ -193,7 +206,13 @@ mod tests {
         let result = authenticate_user(&email, &password);
 
         assert!(result.is_err());
-        assert_eq!(LughError::Unauthorized(format!("Authentication failed for user with email={}", email)), result.err().unwrap())
+        assert_eq!(
+            LughError::Unauthorized(format!(
+                "Authentication failed for user with email={}",
+                email
+            )),
+            result.err().unwrap()
+        )
     }
 
     #[test]
@@ -203,7 +222,6 @@ mod tests {
         let result = authenticate_token(&token);
 
         assert_eq!(false, result.is_err());
-
     }
 
     #[test]
@@ -213,7 +231,10 @@ mod tests {
         let result = authenticate_token(&token);
 
         assert!(result.is_err());
-        assert_eq!(LughError::Unauthorized("Session expired".to_string()), result.err().unwrap())
+        assert_eq!(
+            LughError::Unauthorized("Session expired".to_string()),
+            result.err().unwrap()
+        )
     }
 
     #[test]
@@ -223,7 +244,10 @@ mod tests {
         let result = authenticate_token(&token);
 
         assert!(result.is_err());
-        assert_eq!(LughError::Unauthorized("Session not found".to_string()), result.err().unwrap())
+        assert_eq!(
+            LughError::Unauthorized("Session not found".to_string()),
+            result.err().unwrap()
+        )
     }
 
     #[test]
@@ -254,7 +278,10 @@ mod tests {
         let result = delete_session("nonexistingtoken");
 
         assert!(result.is_err());
-        assert_eq!(LughError::NotFound("No session were deleted".to_string()), result.err().unwrap())
+        assert_eq!(
+            LughError::NotFound("No session were deleted".to_string()),
+            result.err().unwrap()
+        )
     }
 
     #[test]
@@ -274,6 +301,9 @@ mod tests {
         let result = retrieve_user(&email);
 
         assert!(result.is_err());
-        assert_eq!(LughError::NotFound(format!("User not found with email={}", email)), result.err().unwrap())
+        assert_eq!(
+            LughError::NotFound(format!("User not found with email={}", email)),
+            result.err().unwrap()
+        )
     }
 }

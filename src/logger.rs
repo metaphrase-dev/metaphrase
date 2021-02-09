@@ -1,62 +1,91 @@
-extern crate iron;
 extern crate time;
 
-use iron::prelude::*;
-use iron::{BeforeMiddleware, AfterMiddleware, typemap};
-use time::precise_time_ns;
+use std::convert::TryInto;
+
+use std::pin::Pin;
+use std::task::{Context, Poll};
+
+use actix_service::{Service, Transform};
+use actix_web::{dev::ServiceRequest, dev::ServiceResponse, Error};
+use futures_util::future::Future;
+use futures_util::future::{ok, Ready};
+use time::OffsetDateTime;
+
+fn precise_time_ns() -> u64 {
+    (OffsetDateTime::now_utc() - OffsetDateTime::unix_epoch())
+        .whole_nanoseconds()
+        .try_into()
+        .unwrap_or(0)
+}
 
 pub struct RequestLogger;
 
-impl RequestLogger {
-    fn start(&self, request: &mut Request) {
-        request.extensions.insert::<RequestLogger>(precise_time_ns());
-    }
+impl<S, B> Transform<S> for RequestLogger
+where
+    S: Service<Request = ServiceRequest, Response = ServiceResponse<B>, Error = Error>,
+    S::Future: 'static,
+    B: 'static,
+{
+    type Request = ServiceRequest;
+    type Response = ServiceResponse<B>;
+    type Error = Error;
+    type InitError = ();
+    type Transform = RequestLoggerMiddleware<S>;
+    type Future = Ready<Result<Self::Transform, Self::InitError>>;
 
-    fn elapsed_time(&self, request: &mut Request) -> Result<u64, IronError> {
-        let start_time = *request.extensions.get::<RequestLogger>().unwrap();
-        let delta = (precise_time_ns() - start_time) as i64;
-
-        if delta <= 0 {
-            Ok(0)
-        } else {
-            Ok(((delta as f64) / 1000000.0).round() as u64)
-        }
+    fn new_transform(&self, service: S) -> Self::Future {
+        ok(RequestLoggerMiddleware { service })
     }
 }
 
-impl typemap::Key for RequestLogger { type Value = u64; }
+pub struct RequestLoggerMiddleware<S> {
+    service: S,
+}
 
-impl BeforeMiddleware for RequestLogger {
-    fn before(&self, request: &mut Request) -> IronResult<()> {
-        self.start(request);
+impl<S, B> Service for RequestLoggerMiddleware<S>
+where
+    S: Service<Request = ServiceRequest, Response = ServiceResponse<B>, Error = Error>,
+    S::Future: 'static,
+    B: 'static,
+{
+    type Request = ServiceRequest;
+    type Response = ServiceResponse<B>;
+    type Error = Error;
+    type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>>>>;
+
+    fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
+        self.service.poll_ready(cx)
+    }
+
+    fn call(&mut self, req: ServiceRequest) -> Self::Future {
+        let start_time = precise_time_ns();
 
         info!(
-            "Started {} \"{}\" for {} at {}",
-            request.method,
-            format!("/{}", request.url.path().join("/")),
-            request.remote_addr,
-            time::now().strftime("%+").unwrap()
+            "Started {} \"{}\" for {:?} at {}",
+            req.head().method,
+            req.path(),
+            match req.peer_addr() {
+                Some(ip) => format!("{}", ip),
+                None => "".to_string(),
+            },
+            time::OffsetDateTime::now_utc().format("%F %T")
         );
 
-        Ok(())
-    }
-}
+        let fut = self.service.call(req);
 
-impl AfterMiddleware for RequestLogger {
-    fn after(&self, request: &mut Request, response: Response) -> IronResult<Response> {
-        info!("{} ({} ms)", response.status.unwrap(), self.elapsed_time(request)?);
+        Box::pin(async move {
+            let res = fut.await?;
 
-        Ok(response)
-    }
+            let delta = (precise_time_ns() - start_time) as i64;
+            let elapsed_ms = if delta <= 0 {
+                0
+            } else {
+                ((delta as f64) / 1000000.0).round() as u64
+            };
 
-    fn catch(&self, request: &mut Request, err: IronError) -> IronResult<Response> {
-        error!(
-            "{}: {} ({} ms)",
-            err.response.status.unwrap(),
-            err.error,
-            self.elapsed_time(request)?
-        );
+            info!("{} ({} ms)", res.status(), elapsed_ms);
 
-        Err(err)
+            Ok(res)
+        })
     }
 }

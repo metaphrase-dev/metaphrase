@@ -2,16 +2,12 @@
 
 if [ -z $TEST_DATABASE_URL ]; then
   echo "TEST_DATABASE_URL is not set. Aborting."
-  exit 1;
-fi
-
-if [ -z $TEST_LUGH_BIND ]; then
-  echo "TEST_LUGH_BIND is not set. Aborting."
+  echo "  Hint: You can set it to any local path; this script will create it there."
+  echo "        e.g. `TEST_DATABASE_URL=test-database.sqlite make test`"
   exit 1;
 fi
 
 function teardown {
-  kill -SIGTERM $LUGH_PID
   rm $TEST_DATABASE_URL
 }
 
@@ -27,10 +23,6 @@ cargo build
 DATABASE_URL=$TEST_DATABASE_URL diesel setup
 
 sqlite3 $TEST_DATABASE_URL ".read tests/fixtures.sql"
-
-DATABASE_URL=$TEST_DATABASE_URL LUGH_BIND=$TEST_LUGH_BIND target/debug/lugh &
-
-LUGH_PID=$!
 
 DATABASE_URL=$TEST_DATABASE_URL LUGH_BIND=$TEST_LUGH_BIND cargo test $TEST -- --nocapture
 

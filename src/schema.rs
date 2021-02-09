@@ -1,5 +1,5 @@
 table! {
-    sessions {
+    sessions (id) {
         id -> Integer,
         token -> Text,
         user_id -> Integer,
@@ -9,7 +9,7 @@ table! {
 }
 
 table! {
-    settings {
+    settings (id) {
         id -> Integer,
         key -> Text,
         value -> Text,
@@ -19,7 +19,7 @@ table! {
 }
 
 table! {
-    translations {
+    translations (id) {
         id -> Integer,
         key -> Text,
         locale -> Text,
@@ -33,10 +33,17 @@ table! {
 }
 
 table! {
-    users {
+    users (id) {
         id -> Integer,
         email -> Text,
         hashed_password -> Text,
         created_at -> Text,
     }
 }
+
+allow_tables_to_appear_in_same_query!(
+    sessions,
+    settings,
+    translations,
+    users,
+);
