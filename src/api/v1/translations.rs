@@ -146,10 +146,7 @@ pub async fn validate(
     let validated = diesel::update(translations.find(translation.id))
         .set(&translation)
         .execute(&connection)
-        .expect(&format!(
-            "Unable to validate translation with id={}",
-            translation.id
-        ));
+        .unwrap_or_else(|_| panic!("Unable to validate translation with id={}", translation.id));
 
     Ok(match validated {
         1 => HttpResponse::NoContent(),
@@ -174,10 +171,7 @@ pub async fn delete(params: web::Path<DeleteUrlParams>) -> Result<impl Responder
     let deleted = diesel::update(selected_translations)
         .set(deleted_at.eq(now))
         .execute(&connection)
-        .expect(&format!(
-            "Unable to delete translations with key={}",
-            &params.key
-        ));
+        .unwrap_or_else(|_| panic!("Unable to delete translations with key={}", &params.key));
 
     #[derive(Serialize)]
     struct DeletedResult {

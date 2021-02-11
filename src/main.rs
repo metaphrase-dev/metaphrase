@@ -7,8 +7,6 @@ use actix_web::{web, App, HttpServer};
 #[macro_use]
 extern crate log;
 
-use lugh;
-
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     check_environment_variables();

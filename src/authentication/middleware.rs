@@ -33,6 +33,8 @@ pub struct AuthenticationMiddleware<S> {
     service: S,
 }
 
+type ResultReady<SR, SE> = Ready<Result<SR, SE>>;
+
 impl<S, B> Service for AuthenticationMiddleware<S>
 where
     S: Service<Request = ServiceRequest, Response = ServiceResponse<B>, Error = Error>,
@@ -42,7 +44,7 @@ where
     type Request = ServiceRequest;
     type Response = ServiceResponse<B>;
     type Error = Error;
-    type Future = Either<S::Future, Ready<Result<Self::Response, Self::Error>>>;
+    type Future = Either<S::Future, ResultReady<Self::Response, Self::Error>>;
 
     fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
         self.service.poll_ready(cx)
