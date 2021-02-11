@@ -1,14 +1,20 @@
 <template>
   <div class="collection-toolbar">
     <button @click="showAddNewKey">
-      <i class="fa fa-fw fa-plus"></i> New key
+      <IconPlus /> New key
     </button>
   </div>
 </template>
 
 <script>
+  import IconPlus from '/@vite-icons/mdi/plus.vue'
+
   export default {
     name: 'collection-toolbar',
+
+    components: {
+      IconPlus
+    },
 
     methods: {
       showAddNewKey() {
