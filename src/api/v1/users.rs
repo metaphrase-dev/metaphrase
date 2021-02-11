@@ -1,17 +1,17 @@
-use iron::headers::ContentType;
-use iron::prelude::*;
-use iron::status;
+use actix_web::{web, HttpResponse, Responder};
 
-use authentication;
-use super::common::*;
+use crate::{authentication, errors::LughError};
 
-pub fn create(request: &mut Request) -> IronResult<Response> {
-    let email = get_param(request, "email")?;
-    let password = get_param(request, "password")?;
+#[derive(Deserialize)]
+pub struct CreateUserFormData {
+    email: String,
+    password: String,
+}
 
-    let inserted_user = authentication::create_user(&email, &password)?;
+pub async fn create(form: web::Json<CreateUserFormData>) -> Result<impl Responder, LughError> {
+    let inserted_user = authentication::create_user(&form.email, &form.password)?;
 
     debug!("User saved with id={}", inserted_user.id);
 
-    Ok(Response::with((ContentType::json().0, status::Created)))
+    Ok(HttpResponse::Created())
 }

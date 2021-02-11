@@ -1,49 +1,79 @@
-extern crate iron;
+use std::task::{Context, Poll};
 
-use iron::prelude::*;
-use iron::BeforeMiddleware;
+use actix_service::{Service, Transform};
+use actix_web::{
+    dev::ServiceRequest, dev::ServiceResponse, http, Error, HttpMessage, HttpResponse,
+};
+use futures_util::future::{ok, Either, Ready};
 
-use super::*;
+use crate::models::Session;
 
-pub struct AuthenticationMiddleware;
+use super::authenticate_token;
+pub struct Authentication;
 
-impl AuthenticationMiddleware {
-    fn authorize(&self, token: &str) -> Result<Session, LughError> {
-        authenticate_token(token)
-    }
+impl<S, B> Transform<S> for Authentication
+where
+    S: Service<Request = ServiceRequest, Response = ServiceResponse<B>, Error = Error>,
+    S::Future: 'static,
+    B: 'static,
+{
+    type Request = ServiceRequest;
+    type Response = ServiceResponse<B>;
+    type Error = Error;
+    type InitError = ();
+    type Transform = AuthenticationMiddleware<S>;
+    type Future = Ready<Result<Self::Transform, Self::InitError>>;
 
-    fn unauthorized_error(&self) -> Result<(), IronError> {
-        use iron::status;
-        use errors::*;
-
-        Err(IronError {
-            error: Box::new(LughError::Unauthorized("Unauthorized".to_string())),
-            response: Response::with(status::Unauthorized),
-        })
+    fn new_transform(&self, service: S) -> Self::Future {
+        ok(AuthenticationMiddleware { service })
     }
 }
 
-impl BeforeMiddleware for AuthenticationMiddleware {
-    fn before(&self, request: &mut Request) -> IronResult<()> {
-        use iron::headers::*;
+pub struct AuthenticationMiddleware<S> {
+    service: S,
+}
 
-        if request.url.path().last() == Some(&"login") {
-            return Ok(())
+type ResultReady<SR, SE> = Ready<Result<SR, SE>>;
+
+impl<S, B> Service for AuthenticationMiddleware<S>
+where
+    S: Service<Request = ServiceRequest, Response = ServiceResponse<B>, Error = Error>,
+    S::Future: 'static,
+    B: 'static,
+{
+    type Request = ServiceRequest;
+    type Response = ServiceResponse<B>;
+    type Error = Error;
+    type Future = Either<S::Future, ResultReady<Self::Response, Self::Error>>;
+
+    fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
+        self.service.poll_ready(cx)
+    }
+
+    fn call(&mut self, req: ServiceRequest) -> Self::Future {
+        if req.path().ends_with("login") {
+            return Either::Left(self.service.call(req));
         }
 
-        match request.headers.get::<Authorization<Bearer>>() {
-            Some(&Authorization(Bearer { ref token })) => {
-                match self.authorize(token) {
+        if let Some(raw_header_value) = req.headers().get(http::header::AUTHORIZATION) {
+            if let Ok(header_value) = raw_header_value.to_str() {
+                let token_string = header_value.to_string().replace("Bearer ", "");
+
+                match authenticate_token(token_string.as_str()) {
                     Ok(session) => {
-                        request.extensions.insert::<Session>(session);
-                        Ok(())
-                    },
-                    Err(_) => {
-                        self.unauthorized_error()
-                    },
+                        req.extensions_mut().insert::<Session>(session);
+
+                        return Either::Left(self.service.call(req));
+                    }
+                    Err(error) => {
+                        eprintln!("{}", error);
+                    }
                 }
-            },
-            None => self.unauthorized_error()
+            }
         }
+
+        Either::Right(ok(
+            req.into_response(HttpResponse::Unauthorized().finish().into_body())
+        ))
     }
 }

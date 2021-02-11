@@ -1,60 +1,80 @@
-use hyper::*;
-use hyper::client::Response;
-use hyper::header::Headers;
-use std::io::Read;
+use actix_web::{
+    dev::{Body, ResponseBody, ServiceResponse},
+    http::{self, Method},
+};
+use actix_web::{test, web, App};
+use test::TestRequest;
+use time::PrimitiveDateTime;
 
-pub fn delete(path: &'static str, token: &Option<String>) -> (Response, String) {
-    let mut response = Client::new()
-        .delete(&url(path))
-        .headers(headers(token))
-        .send()
-        .unwrap();
+use crate::*;
+use lugh;
 
-    let mut content = String::new();
-    response.read_to_string(&mut content).unwrap();
-
-    (response, content)
+trait BodyTest {
+    fn as_str(&self) -> &str;
 }
 
-pub fn get(path: &'static str, token: &Option<String>) -> (Response, String) {
-    let mut response = Client::new()
-        .get(&url(path))
-        .headers(headers(token))
-        .send()
-        .unwrap();
-
-    let mut result = String::new();
-    response.read_to_string(&mut result).unwrap();
-
-    (response, result)
+impl BodyTest for ResponseBody<Body> {
+    fn as_str(&self) -> &str {
+        match self {
+            ResponseBody::Body(ref b) => match b {
+                Body::Bytes(ref by) => std::str::from_utf8(&by).unwrap(),
+                Body::Empty => "",
+                _ => panic!(format!("can't read the body?? {:#?}", b)),
+            },
+            ResponseBody::Other(ref b) => match b {
+                Body::Bytes(ref by) => std::str::from_utf8(&by).unwrap(),
+                Body::Empty => "",
+                _ => panic!(format!("can't read the body?? {:#?}", b)),
+            },
+        }
+    }
 }
 
-pub fn post(path: &'static str, body: &Option<String>, token: &Option<String>) -> (Response, String) {
-    let client = Client::new();
+pub async fn call_server(
+    method: actix_web::http::Method,
+    path: &'static str,
+    body: Option<String>,
+    token: Option<String>,
+) -> ServiceResponse<Body> {
+    let mut app = test::init_service(
+        App::new()
+            .wrap(lugh::logger::RequestLogger)
+            .wrap(lugh::authentication::middleware::Authentication)
+            .service(web::scope("/api/v1").configure(lugh::api::v1::config)),
+    )
+    .await;
 
-    let mut request = client.post(&url(path))
-        .headers(headers(token));
+    let simple_request = TestRequest::default().method(method).uri(path);
+    let with_token = add_token_header(simple_request, &token);
+    let with_body = add_body(with_token, &body);
 
-    request = match *body {
-        Some(ref body) => request.body(body),
-        None => request,
-    };
-
-    let mut response = request.send().unwrap();
-
-    let mut content = String::new();
-    response.read_to_string(&mut content).unwrap();
-
-    (response, content)
+    let req = with_body.to_request();
+    test::call_service(&mut app, req).await
 }
 
-pub fn url(path: &'static str) -> String {
-    use std::env;
+pub async fn delete(path: &'static str, token: Option<String>) -> (ServiceResponse, String) {
+    let response: ServiceResponse = call_server(Method::DELETE, path, None, token).await;
+    let body = response.response().body().as_str().to_string();
 
-    let hostname = env::var("LUGH_BIND")
-        .expect("LUGH_BIND must be set");
+    (response, body)
+}
 
-    "http://".to_string() + hostname.as_str() + path
+pub async fn get(path: &'static str, token: Option<String>) -> (ServiceResponse, String) {
+    let response: ServiceResponse = call_server(Method::GET, path, None, token).await;
+    let body = response.response().body().as_str().to_string();
+
+    (response, body)
+}
+
+pub async fn post(
+    path: &'static str,
+    body: Option<String>,
+    token: Option<String>,
+) -> (ServiceResponse, String) {
+    let response: ServiceResponse = call_server(Method::POST, path, body, token).await;
+    let response_body = response.response().body().as_str().to_string();
+
+    (response, response_body)
 }
 
 pub fn valid_token() -> Option<String> {
@@ -62,34 +82,29 @@ pub fn valid_token() -> Option<String> {
 }
 
 pub fn has_happened_now(time_str: &str) -> bool {
-    use time::{Duration, now_utc, strptime};
+    use time::{Duration, OffsetDateTime};
 
-    let time = strptime(time_str, "%F %T").unwrap();
-    let now = now_utc();
+    let time: PrimitiveDateTime = time::parse(time_str, "%F %T").unwrap();
+    let time_utc = time.assume_utc();
+    let now = OffsetDateTime::now_utc();
     let min = now - Duration::seconds(2);
 
-    time > min && time <= now
+    time_utc > min && time_utc <= now
 }
 
-fn headers(token: &Option<String>) -> Headers {
-    use hyper::header::{Authorization, Bearer, ContentType, Headers};
-    use hyper::mime::{Mime, TopLevel, SubLevel, Attr, Value};
-
-    let mut headers = Headers::new();
-
-    if let Some(ref token) = *token {
-        headers.set(Authorization(Bearer { token: token.to_string() }))
+fn add_token_header(req: TestRequest, token: &Option<String>) -> TestRequest {
+    if let Some(token) = token {
+        req.header(http::header::AUTHORIZATION, format!("Bearer {}", token))
+    } else {
+        req
     }
+}
 
-    headers.set(
-        ContentType(
-            Mime(
-                TopLevel::Application,
-                SubLevel::Json,
-                vec![(Attr::Charset, Value::Utf8)]
-            )
-        )
-    );
-
-    headers
+fn add_body(req: TestRequest, body: &Option<String>) -> TestRequest {
+    if let Some(body) = body {
+        req.set_payload(body.clone())
+            .header(http::header::CONTENT_TYPE, "application/json")
+    } else {
+        req.header(http::header::CONTENT_TYPE, "application/json")
+    }
 }

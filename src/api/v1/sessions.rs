@@ -1,18 +1,21 @@
-use iron::headers::ContentType;
-use iron::prelude::*;
-use iron::status;
-use serde_json;
+use crate::{
+    authentication::{authenticate_user, delete_session},
+    errors::LughError,
+};
+use actix_web::{http::StatusCode, web, HttpRequest, HttpResponse, Responder};
 
-use authentication::{authenticate_user, delete_session};
-use super::common::*;
+use crate::models::{NewSession, Session};
 
-pub fn login(request: &mut Request) -> IronResult<Response> {
-    use models::NewSession;
+use serde_derive::Deserialize;
 
-    let email = get_param(request, "email")?;
-    let password = get_param(request, "password")?;
+#[derive(Deserialize)]
+pub struct LoginFormData {
+    email: String,
+    password: String,
+}
 
-    let (user, session) = authenticate_user(&email, &password)?;
+pub async fn login(form: web::Json<LoginFormData>) -> Result<impl Responder, LughError> {
+    let (user, session) = authenticate_user(&form.email, &form.password)?;
 
     let new_session = NewSession {
         token: session.token,
@@ -20,17 +23,13 @@ pub fn login(request: &mut Request) -> IronResult<Response> {
         expired_at: session.expired_at,
     };
 
-    let payload = serde_json::to_string(&new_session).unwrap();
-
-    Ok(Response::with((ContentType::json().0, status::Created, payload)))
+    Ok(web::Json(new_session).with_status(StatusCode::CREATED))
 }
 
-pub fn logout(request: &mut Request) -> IronResult<Response> {
-    use models::Session;
+pub async fn logout(request: HttpRequest) -> Result<impl Responder, LughError> {
+    if let Some(current_session) = request.extensions().get::<Session>() {
+        delete_session(current_session.token.as_str())?;
+    }
 
-    let current_session = request.extensions.get::<Session>().unwrap();
-
-    delete_session(current_session.token.as_str())?;
-
-    Ok(Response::with((ContentType::json().0, status::NoContent)))
+    Ok(HttpResponse::NoContent())
 }

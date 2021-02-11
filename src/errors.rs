@@ -1,11 +1,9 @@
-use diesel::ConnectionError as DieselConnectionError;
+use actix_web::ResponseError;
 use diesel::result::Error as DieselResultError;
-use iron::prelude::*;
-use iron::status;
+use diesel::ConnectionError as DieselConnectionError;
 use std::error::Error;
 use std::fmt;
 use std::string::FromUtf8Error;
-use params::ParamsError;
 use time::ParseError;
 
 #[derive(Debug)]
@@ -14,18 +12,17 @@ pub enum LughError {
     DatabaseError(String),
     NotFound(String),
     ParseFailed(String),
-    Unauthorized(String)
+    Unauthorized(String),
 }
 
 impl fmt::Display for LughError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            LughError::BadRequest(ref message) |
-                LughError::DatabaseError(ref message) |
-                LughError::NotFound(ref message) |
-                LughError::ParseFailed(ref message) |
-                LughError::Unauthorized(ref message)
-            => f.write_str(message),
+            LughError::BadRequest(ref message)
+            | LughError::DatabaseError(ref message)
+            | LughError::NotFound(ref message)
+            | LughError::ParseFailed(ref message)
+            | LughError::Unauthorized(ref message) => f.write_str(message),
         }
     }
 }
@@ -33,30 +30,31 @@ impl fmt::Display for LughError {
 impl Error for LughError {
     fn description(&self) -> &str {
         match *self {
-            LughError::BadRequest(ref message) |
-                LughError::DatabaseError(ref message) |
-                LughError::NotFound(ref message) |
-                LughError::ParseFailed(ref message) |
-                LughError::Unauthorized(ref message)
-            => message.as_str(),
+            LughError::BadRequest(ref message)
+            | LughError::DatabaseError(ref message)
+            | LughError::NotFound(ref message)
+            | LughError::ParseFailed(ref message)
+            | LughError::Unauthorized(ref message) => message.as_str(),
         }
     }
 }
 
-impl From<LughError> for IronError {
-    fn from(error: LughError) -> IronError {
-        match error {
-            LughError::BadRequest(_) => IronError::new(error, status::BadRequest),
-            LughError::DatabaseError(_) | LughError::ParseFailed(_) => IronError::new(error, status::InternalServerError),
-            LughError::NotFound(_) => IronError::new(error, status::NotFound),
-            LughError::Unauthorized(_) => IronError::new(error, status::Unauthorized),
+impl ResponseError for LughError {
+    fn status_code(&self) -> actix_web::http::StatusCode {
+        match self {
+            LughError::BadRequest(_) => actix_web::http::StatusCode::BAD_REQUEST,
+            LughError::DatabaseError(_) | LughError::ParseFailed(_) => {
+                actix_web::http::StatusCode::INTERNAL_SERVER_ERROR
+            }
+            LughError::NotFound(_) => actix_web::http::StatusCode::NOT_FOUND,
+            LughError::Unauthorized(_) => actix_web::http::StatusCode::UNAUTHORIZED,
         }
     }
 }
 
 impl PartialEq for LughError {
     fn eq(&self, other: &LughError) -> bool {
-        self.description() == other.description()
+        self.to_string() == other.to_string()
     }
 }
 
@@ -78,15 +76,8 @@ impl From<FromUtf8Error> for LughError {
     }
 }
 
-impl From<ParamsError> for LughError {
-    fn from(error: ParamsError) -> LughError {
-        LughError::BadRequest(error.description().to_string())
-    }
-}
-
 impl From<ParseError> for LughError {
     fn from(_: ParseError) -> LughError {
         LughError::ParseFailed("Parse error".to_string())
     }
 }
-

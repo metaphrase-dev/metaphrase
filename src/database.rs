@@ -1,6 +1,6 @@
+use super::errors::LughError;
 use diesel::prelude::*;
 use diesel::sqlite::SqliteConnection;
-use errors::LughError;
 use std::env;
 
 pub fn establish_connection() -> Result<SqliteConnection, LughError> {

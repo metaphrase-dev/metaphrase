@@ -1,62 +1,64 @@
-use iron::headers::ContentType;
-use iron::prelude::*;
-use iron::status;
+use crate::errors::*;
+use crate::models::*;
+use crate::schema::translations::dsl::*;
+use actix_web::{http::StatusCode, web, HttpRequest, HttpResponse, Responder};
 use diesel::expression::dsl::sql;
 use diesel::prelude::*;
 use diesel::sqlite::SqliteConnection;
-use errors::*;
-use models::*;
-use serde_json;
-use schema::translations::dsl::*;
 
-use database;
 use super::common::*;
+use crate::database;
 
-pub fn index(_: &mut Request) -> IronResult<Response> {
+pub async fn index() -> Result<impl Responder, LughError> {
     use std::collections::HashMap;
 
     let connection = database::establish_connection()?;
-    let results = translations.filter(
-            sql("key || locale || created_at IN (
+    let results = translations
+        .filter(sql("key || locale || created_at IN (
                   SELECT key || locale || MAX(created_at)
                   FROM translations
                   WHERE deleted_at IS NULL
-                  GROUP BY key, locale)")
-        )
+                  GROUP BY key, locale)"))
         .load::<Translation>(&connection)
         .expect("Error loading translations");
 
     let mut all_translations = HashMap::new();
 
-    for translation in &results {
-      let mut translations_for_key = all_translations.entry(&translation.key)
-          .or_insert_with(Vec::<TranslationForLocale>::new);
+    for translation in results {
+        let translations_for_key = all_translations
+            .entry(translation.key.clone())
+            .or_insert_with(Vec::<TranslationForLocale>::new);
 
-      translations_for_key.push(
-          TranslationForLocale {
-              id: translation.id,
-              locale: translation.locale.clone(),
-              content: translation.content.clone(),
-              created_at: translation.created_at.clone(),
-              user_id: translation.user_id,
-              validator_id: translation.validator_id,
-              validated_at: translation.validated_at.clone(),
-          }
-      );
+        translations_for_key.push(TranslationForLocale {
+            id: translation.id,
+            locale: translation.locale.clone(),
+            content: translation.content.clone(),
+            created_at: translation.created_at.clone(),
+            user_id: translation.user_id,
+            validator_id: translation.validator_id,
+            validated_at: translation.validated_at.clone(),
+        });
     }
 
     debug!("Returns {} translations", all_translations.len());
 
-    let payload = serde_json::to_string(&all_translations).unwrap();
-
-    Ok(Response::with((ContentType::json().0, status::Ok, payload)))
+    Ok(web::Json(all_translations))
 }
 
-pub fn create(request: &mut Request) -> IronResult<Response> {
-    use diesel;
-    use typographic_linter::Linter;
+#[derive(Deserialize)]
+pub struct CreateFormData {
+    key: String,
+    locale: String,
+    content: String,
+}
+
+pub async fn create(
+    form: web::Json<CreateFormData>,
+    req: HttpRequest,
+) -> Result<impl Responder, LughError> {
+    use crate::schema::translations;
     use typographic_linter::errors::LinterWarning;
-    use schema::translations;
+    use typographic_linter::Linter;
 
     #[derive(Serialize)]
     struct CreateTranslationResponse {
@@ -64,27 +66,24 @@ pub fn create(request: &mut Request) -> IronResult<Response> {
         warnings: Vec<LinterWarning>,
     }
 
-    let new_key = get_param(request, "key")?;
-    let new_locale = get_param(request, "locale")?;
-    let new_content = get_param(request, "content")?;
-
-    let user = current_user(request)?;
+    let user = current_user(&req)?;
 
     let new_translation = NewTranslation {
-        key: new_key,
-        locale: new_locale,
-        content: new_content,
+        key: form.key.clone(),
+        locale: form.locale.clone(),
+        content: form.content.clone(),
         user_id: user.id,
     };
 
     let connection = database::establish_connection()?;
 
-    diesel::insert(&new_translation)
-        .into(translations::table)
+    diesel::insert_into(translations::table)
+        .values(&new_translation)
         .execute(&connection)
         .expect("Error saving new translation");
 
-    let inserted_translation = translations.filter(id.eq(sql("last_insert_rowid()")))
+    let inserted_translation = translations
+        .filter(id.eq(sql("last_insert_rowid()")))
         .get_result::<Translation>(&connection)
         .expect("Error getting inserted translation");
 
@@ -95,107 +94,115 @@ pub fn create(request: &mut Request) -> IronResult<Response> {
         warnings: Vec::new(),
     };
 
-    let linter = Linter::new(new_translation.locale).unwrap()
+    let linter = Linter::new(new_translation.locale)
+        .unwrap()
         .check(&new_translation.content);
 
     if linter.is_err() {
         response.warnings = linter.err().unwrap();
     }
 
-    let payload = serde_json::to_string(&response).unwrap();
-
-    Ok(Response::with((ContentType::json().0, status::Created, payload)))
+    Ok(web::Json(response).with_status(StatusCode::CREATED))
 }
 
-pub fn show(request: &mut Request) -> IronResult<Response> {
-    use router::Router;
+#[derive(Deserialize)]
+pub struct ShowUrlParams {
+    key: String,
+}
 
-    let translation_key = request.extensions.get::<Router>().unwrap().find("key").unwrap();
-
+pub async fn show(params: web::Path<ShowUrlParams>) -> Result<impl Responder, LughError> {
     let connection = database::establish_connection()?;
 
-    let all_translations = translations.filter(key.eq(translation_key))
+    let all_translations = translations
+        .filter(key.eq(&params.key))
         .load::<Translation>(&connection)
         .expect("Error loading translations");
 
     debug!("Returns {} translations", all_translations.len());
 
-    let payload = serde_json::to_string(&all_translations).unwrap();
-
-    Ok(Response::with((ContentType::json().0, status::Ok, payload)))
+    Ok(web::Json(all_translations))
 }
 
-pub fn validate(request: &mut Request) -> IronResult<Response> {
-    use diesel;
+#[derive(Deserialize)]
+pub struct ValidateUrlParams {
+    id: i32,
+}
+
+pub async fn validate(
+    params: web::Path<ValidateUrlParams>,
+    req: HttpRequest,
+) -> Result<impl Responder, LughError> {
+    use crate::schema::translations::dsl::*;
     use diesel::prelude::*;
-    use router::Router;
-    use schema::translations::dsl::*;
 
-    let translation_id: i32 = request.extensions
-        .get::<Router>().unwrap()
-        .find("id").unwrap()
-        .parse().unwrap();
-
-    let user = current_user(request)?;
+    let user = current_user(&req)?;
 
     let connection = database::establish_connection()?;
-    let mut translation = find_translation(&connection, translation_id)?;
+    let mut translation = find_translation(&connection, params.id)?;
 
     translation.validator_id = Some(user.id);
-    translation.validated_at = Some(now_str()?);
+    translation.validated_at = Some(now_str());
 
     let validated = diesel::update(translations.find(translation.id))
         .set(&translation)
         .execute(&connection)
-        .expect(&format!("Unable to validate translation with id={}", &translation_id));
+        .unwrap_or_else(|_| panic!("Unable to validate translation with id={}", translation.id));
 
-    let status = match validated {
-        1 => status::NoContent,
-        _ => status::InternalServerError,
-    };
-
-    Ok(Response::with((ContentType::json().0, status)))
+    Ok(match validated {
+        1 => HttpResponse::NoContent(),
+        _ => HttpResponse::InternalServerError(),
+    })
 }
 
-pub fn delete(request: &mut Request) -> IronResult<Response> {
-    use diesel;
-    use router::Router;
+#[derive(Deserialize)]
+pub struct DeleteUrlParams {
+    key: String,
+}
 
-    let key_to_delete = request.extensions.get::<Router>().unwrap().find("key").unwrap();
-
+pub async fn delete(params: web::Path<DeleteUrlParams>) -> Result<impl Responder, LughError> {
     let connection = database::establish_connection()?;
 
-    let now = now_str()?;
+    let now = now_str();
 
-    let selected_translations = translations.filter(key.eq(&key_to_delete))
+    let selected_translations = translations
+        .filter(key.eq(&params.key))
         .filter(deleted_at.is_null());
 
     let deleted = diesel::update(selected_translations)
         .set(deleted_at.eq(now))
         .execute(&connection)
-        .expect(&format!("Unable to delete translations with key={}", &key_to_delete));
+        .unwrap_or_else(|_| panic!("Unable to delete translations with key={}", &params.key));
 
     #[derive(Serialize)]
     struct DeletedResult {
         deleted_translations: usize,
     };
 
-    let payload = serde_json::to_string(&DeletedResult { deleted_translations: deleted }).unwrap();
-
-    let status = match deleted {
-        0 => status::NotFound,
-        _ => status::Ok,
+    let payload = DeletedResult {
+        deleted_translations: deleted,
     };
 
-    Ok(Response::with((ContentType::json().0, status, payload)))
+    Ok(web::Json(payload).with_status(match deleted {
+        0 => StatusCode::NOT_FOUND,
+        _ => StatusCode::OK,
+    }))
 }
 
-fn find_translation(connection: &SqliteConnection, translation_id: i32) -> Result<Translation, LughError> {
+fn find_translation(
+    connection: &SqliteConnection,
+    translation_id: i32,
+) -> Result<Translation, LughError> {
+    use crate::schema::translations::dsl::*;
     use diesel::prelude::*;
-    use schema::translations::dsl::*;
 
-    match translations.find(translation_id).first::<Translation>(connection) {
+    match translations
+        .find(translation_id)
+        .first::<Translation>(connection)
+    {
         Ok(translation) => Ok(translation),
-        Err(_) => Err(LughError::NotFound(format!("Can’t find Translation with id={}", translation_id))),
+        Err(_) => Err(LughError::NotFound(format!(
+            "Can’t find Translation with id={}",
+            translation_id
+        ))),
     }
 }

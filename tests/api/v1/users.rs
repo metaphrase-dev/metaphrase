@@ -2,8 +2,8 @@
 mod tests {
     use super::super::common::*;
 
-    use hyper::client::Response;
-    use hyper::status::StatusCode;
+    use actix_web::{dev::ServiceResponse, http::StatusCode};
+
     use serde_json;
 
     #[derive(Serialize)]
@@ -12,66 +12,66 @@ mod tests {
         password: Option<&'static str>,
     }
 
-    #[test]
-    fn test_create_without_body() {
-        let (response, content) = post("/api/v1/users", &None, &valid_token());
+    #[actix_rt::test]
+    async fn test_create_without_body() {
+        let (response, content) = post("/api/v1/users", None, valid_token()).await;
 
-        assert_eq!(StatusCode::BadRequest, response.status);
+        assert_eq!(StatusCode::BAD_REQUEST, response.status());
         assert_eq!("", content)
     }
 
-    #[test]
-    fn test_create_without_token() {
+    #[actix_rt::test]
+    async fn test_create_without_token() {
         let new_user = NewUser {
             email: Some("user@domain.com"),
             password: Some("p4ssw0rd"),
         };
 
-        let (response, content) = post_user(&new_user, &None);
+        let (response, content) = post_user(&new_user, None).await;
 
-        assert_eq!(StatusCode::Unauthorized, response.status);
+        assert_eq!(StatusCode::UNAUTHORIZED, response.status());
         assert_eq!("", content);
     }
 
-    #[test]
-    fn test_create_without_email() {
+    #[actix_rt::test]
+    async fn test_create_without_email() {
         let new_user = NewUser {
             email: None,
             password: Some("p4ssw0rd"),
         };
 
-        let (response, _) = post_user(&new_user, &valid_token());
+        let (response, _) = post_user(&new_user, valid_token()).await;
 
-        assert_eq!(StatusCode::BadRequest, response.status);
+        assert_eq!(StatusCode::BAD_REQUEST, response.status());
     }
 
-    #[test]
-    fn test_create_without_password() {
+    #[actix_rt::test]
+    async fn test_create_without_password() {
         let new_user = NewUser {
             email: Some("user@domain.com"),
             password: None,
         };
 
-        let (response, _) = post_user(&new_user, &valid_token());
+        let (response, _) = post_user(&new_user, valid_token()).await;
 
-        assert_eq!(StatusCode::BadRequest, response.status);
+        assert_eq!(StatusCode::BAD_REQUEST, response.status());
     }
 
-    #[test]
-    fn test_create_with_success() {
+    #[actix_rt::test]
+    async fn test_create_with_success() {
         let new_user = NewUser {
             email: Some("r@l.fr"),
             password: Some("p4ssw0rd"),
         };
 
-        let (response, _) = post_user(&new_user, &valid_token());
+        let (response, _) = post_user(&new_user, valid_token()).await;
 
-        assert_eq!(StatusCode::Created, response.status);
+        assert_eq!(StatusCode::CREATED, response.status());
     }
 
-    fn post_user(user: &NewUser, token: &Option<String>) -> (Response, String) {
+    async fn post_user(user: &NewUser, token: Option<String>) -> (ServiceResponse, String) {
         let body = serde_json::to_string(&user).unwrap();
 
-        post("/api/v1/users", &Some(body), token)
+        post("/api/v1/users", Some(body), token).await
     }
 }
