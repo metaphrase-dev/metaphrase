@@ -29,9 +29,7 @@
 </template>
 
 <script>
-import IconClose from "/@vite-icons/mdi/close.vue";
-import IconPlus from "/@vite-icons/mdi/plus.vue";
-import IconKey from "/@vite-icons/mdi/key.vue";
+import { IconClose, IconPlus, IconKey } from "../../assets/Icons.jsx";
 
 export default {
   name: "add-new-key-modal",
