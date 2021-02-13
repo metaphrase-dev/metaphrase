@@ -10,4 +10,4 @@ fi
 cargo build
 
 # Brunch
-cd ./src/frontend && brunch build
+cd ./src/frontend && npm run build
