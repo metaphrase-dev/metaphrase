@@ -1,6 +1,6 @@
 <template>
   <div id="toolbar">
-    <h1>Lugh</h1>
+    <h1>Metaphrase</h1>
     <button @click="logout"><IconLogoutVariant /> Logout</button>
   </div>
 </template>

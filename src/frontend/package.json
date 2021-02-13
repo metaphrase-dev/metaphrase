@@ -1,12 +1,12 @@
 {
-  "name": "lugh-frontend",
-  "description": "Lugh (frontend)",
+  "name": "metaphrase-frontend",
+  "description": "Metaphrase (frontend)",
   "author": "Stanislas Signoud and Raphaël Lustin",
   "version": "0.2.0",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/rlustin/lugh"
+    "url": "https://github.com/metaphrase-dev/metaphrase"
   },
   "scripts": {
     "dev": "vite",
