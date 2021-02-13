@@ -8,7 +8,7 @@ pub mod translations;
 pub mod users;
 
 pub async fn index() -> impl Responder {
-    "Welcome to Lugh API!"
+    "Welcome to Metaphrase API!"
 }
 
 pub fn config(cfg: &mut web::ServiceConfig) {

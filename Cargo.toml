@@ -1,5 +1,5 @@
 [package]
-name = "lugh"
+name = "metaphrase"
 version = "0.2.0"
 authors = ["Raphaël Lustin <raphael@lustin.fr>", "Stanislas Signoud <signez@stanisoft.net>"]
 edition = "2018"

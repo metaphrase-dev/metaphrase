@@ -5,7 +5,7 @@ use diesel::{dsl::sql, prelude::*};
 
 pub mod middleware;
 
-pub fn authenticate_user(email: &str, password: &str) -> Result<(User, Session), LughError> {
+pub fn authenticate_user(email: &str, password: &str) -> Result<(User, Session), MetaphraseError> {
     let user = retrieve_user(email)?;
 
     verify_password(&user, password)?;
@@ -15,7 +15,7 @@ pub fn authenticate_user(email: &str, password: &str) -> Result<(User, Session),
     Ok((user, session))
 }
 
-pub fn authenticate_token(auth_token: &str) -> Result<Session, LughError> {
+pub fn authenticate_token(auth_token: &str) -> Result<Session, MetaphraseError> {
     use crate::schema::sessions::dsl::*;
 
     let connection = database::establish_connection()?;
@@ -31,14 +31,16 @@ pub fn authenticate_token(auth_token: &str) -> Result<Session, LughError> {
             if session_expired_at.assume_utc() > time::OffsetDateTime::now_utc() {
                 Ok(session)
             } else {
-                Err(LughError::Unauthorized("Session expired".to_string()))
+                Err(MetaphraseError::Unauthorized("Session expired".to_string()))
             }
         }
-        Err(_) => Err(LughError::Unauthorized("Session not found".to_string())),
+        Err(_) => Err(MetaphraseError::Unauthorized(
+            "Session not found".to_string(),
+        )),
     }
 }
 
-pub fn create_user(new_email: &str, new_password: &str) -> Result<User, LughError> {
+pub fn create_user(new_email: &str, new_password: &str) -> Result<User, MetaphraseError> {
     use crate::schema::users::dsl::*;
     use crate::schema::users::table;
 
@@ -64,7 +66,7 @@ pub fn create_user(new_email: &str, new_password: &str) -> Result<User, LughErro
     Ok(inserted_user)
 }
 
-pub fn delete_session(token_to_delete: &str) -> Result<(), LughError> {
+pub fn delete_session(token_to_delete: &str) -> Result<(), MetaphraseError> {
     use crate::schema::sessions::dsl::*;
 
     let connection = database::establish_connection()?;
@@ -73,12 +75,14 @@ pub fn delete_session(token_to_delete: &str) -> Result<(), LughError> {
         diesel::delete(sessions.filter(token.eq(&token_to_delete))).execute(&connection)?;
 
     match deleted {
-        0 => Err(LughError::NotFound("No session were deleted".to_string())),
+        0 => Err(MetaphraseError::NotFound(
+            "No session were deleted".to_string(),
+        )),
         _ => Ok(()),
     }
 }
 
-pub fn retrieve_user(user_email: &str) -> Result<User, LughError> {
+pub fn retrieve_user(user_email: &str) -> Result<User, MetaphraseError> {
     use crate::schema::users::dsl::*;
 
     let connection = database::establish_connection()?;
@@ -88,14 +92,14 @@ pub fn retrieve_user(user_email: &str) -> Result<User, LughError> {
         .first::<User>(&connection)
     {
         Ok(user) => Ok(user),
-        Err(_) => Err(LughError::NotFound(format!(
+        Err(_) => Err(MetaphraseError::NotFound(format!(
             "User not found with email={}",
             user_email
         ))),
     }
 }
 
-fn create_session(user: &User) -> Result<Session, LughError> {
+fn create_session(user: &User) -> Result<Session, MetaphraseError> {
     use crate::schema::sessions::dsl::*;
     use crate::schema::sessions::table;
     use time::Duration;
@@ -122,7 +126,7 @@ fn create_session(user: &User) -> Result<Session, LughError> {
     Ok(session)
 }
 
-fn generate_token() -> Result<String, LughError> {
+fn generate_token() -> Result<String, MetaphraseError> {
     use rand::distributions::Alphanumeric;
     use rand::Rng;
 
@@ -134,22 +138,24 @@ fn generate_token() -> Result<String, LughError> {
     Ok(token)
 }
 
-fn hash_password(password: &str) -> Result<String, LughError> {
+fn hash_password(password: &str) -> Result<String, MetaphraseError> {
     use pwhash::bcrypt;
 
     match bcrypt::hash(password) {
         Ok(password) => Ok(password),
-        Err(_) => Err(LughError::Unauthorized("Can’t hash password".to_string())),
+        Err(_) => Err(MetaphraseError::Unauthorized(
+            "Can’t hash password".to_string(),
+        )),
     }
 }
 
-fn verify_password(user: &User, password: &str) -> Result<(), LughError> {
+fn verify_password(user: &User, password: &str) -> Result<(), MetaphraseError> {
     use pwhash::bcrypt;
 
     if bcrypt::verify(password, user.hashed_password.as_str()) {
         Ok(())
     } else {
-        Err(LughError::Unauthorized(format!(
+        Err(MetaphraseError::Unauthorized(format!(
             "Authentication failed for user with email={}",
             user.email
         )))
@@ -193,7 +199,7 @@ mod tests {
 
         assert!(result.is_err());
         assert_eq!(
-            LughError::NotFound(format!("User not found with email={}", email)),
+            MetaphraseError::NotFound(format!("User not found with email={}", email)),
             result.err().unwrap()
         )
     }
@@ -207,7 +213,7 @@ mod tests {
 
         assert!(result.is_err());
         assert_eq!(
-            LughError::Unauthorized(format!(
+            MetaphraseError::Unauthorized(format!(
                 "Authentication failed for user with email={}",
                 email
             )),
@@ -232,7 +238,7 @@ mod tests {
 
         assert!(result.is_err());
         assert_eq!(
-            LughError::Unauthorized("Session expired".to_string()),
+            MetaphraseError::Unauthorized("Session expired".to_string()),
             result.err().unwrap()
         )
     }
@@ -245,7 +251,7 @@ mod tests {
 
         assert!(result.is_err());
         assert_eq!(
-            LughError::Unauthorized("Session not found".to_string()),
+            MetaphraseError::Unauthorized("Session not found".to_string()),
             result.err().unwrap()
         )
     }
@@ -279,7 +285,7 @@ mod tests {
 
         assert!(result.is_err());
         assert_eq!(
-            LughError::NotFound("No session were deleted".to_string()),
+            MetaphraseError::NotFound("No session were deleted".to_string()),
             result.err().unwrap()
         )
     }
@@ -302,7 +308,7 @@ mod tests {
 
         assert!(result.is_err());
         assert_eq!(
-            LughError::NotFound(format!("User not found with email={}", email)),
+            MetaphraseError::NotFound(format!("User not found with email={}", email)),
             result.err().unwrap()
         )
     }

@@ -9,7 +9,7 @@ use diesel::sqlite::SqliteConnection;
 use super::common::*;
 use crate::database;
 
-pub async fn index() -> Result<impl Responder, LughError> {
+pub async fn index() -> Result<impl Responder, MetaphraseError> {
     use std::collections::HashMap;
 
     let connection = database::establish_connection()?;
@@ -55,7 +55,7 @@ pub struct CreateFormData {
 pub async fn create(
     form: web::Json<CreateFormData>,
     req: HttpRequest,
-) -> Result<impl Responder, LughError> {
+) -> Result<impl Responder, MetaphraseError> {
     use crate::schema::translations;
     use typographic_linter::errors::LinterWarning;
     use typographic_linter::Linter;
@@ -110,7 +110,7 @@ pub struct ShowUrlParams {
     key: String,
 }
 
-pub async fn show(params: web::Path<ShowUrlParams>) -> Result<impl Responder, LughError> {
+pub async fn show(params: web::Path<ShowUrlParams>) -> Result<impl Responder, MetaphraseError> {
     let connection = database::establish_connection()?;
 
     let all_translations = translations
@@ -131,7 +131,7 @@ pub struct ValidateUrlParams {
 pub async fn validate(
     params: web::Path<ValidateUrlParams>,
     req: HttpRequest,
-) -> Result<impl Responder, LughError> {
+) -> Result<impl Responder, MetaphraseError> {
     use crate::schema::translations::dsl::*;
     use diesel::prelude::*;
 
@@ -159,7 +159,7 @@ pub struct DeleteUrlParams {
     key: String,
 }
 
-pub async fn delete(params: web::Path<DeleteUrlParams>) -> Result<impl Responder, LughError> {
+pub async fn delete(params: web::Path<DeleteUrlParams>) -> Result<impl Responder, MetaphraseError> {
     let connection = database::establish_connection()?;
 
     let now = now_str();
@@ -191,7 +191,7 @@ pub async fn delete(params: web::Path<DeleteUrlParams>) -> Result<impl Responder
 fn find_translation(
     connection: &SqliteConnection,
     translation_id: i32,
-) -> Result<Translation, LughError> {
+) -> Result<Translation, MetaphraseError> {
     use crate::schema::translations::dsl::*;
     use diesel::prelude::*;
 
@@ -200,7 +200,7 @@ fn find_translation(
         .first::<Translation>(connection)
     {
         Ok(translation) => Ok(translation),
-        Err(_) => Err(LughError::NotFound(format!(
+        Err(_) => Err(MetaphraseError::NotFound(format!(
             "Can’t find Translation with id={}",
             translation_id
         ))),

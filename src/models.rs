@@ -35,7 +35,7 @@ pub struct Session {
 }
 
 impl Session {
-    pub fn user(&self) -> Result<User, LughError> {
+    pub fn user(&self) -> Result<User, MetaphraseError> {
         use super::database;
         use super::schema::users::dsl::*;
         use diesel::prelude::*;
@@ -44,7 +44,7 @@ impl Session {
 
         match users.find(&self.user_id).first::<User>(&connection) {
             Ok(user) => Ok(user),
-            Err(_) => Err(LughError::NotFound(
+            Err(_) => Err(MetaphraseError::NotFound(
                 "User not found for this Session".to_string(),
             )),
         }
@@ -102,7 +102,7 @@ mod tests {
 
         assert!(result.is_err());
         assert_eq!(
-            LughError::NotFound("User not found for this Session".to_string()),
+            MetaphraseError::NotFound("User not found for this Session".to_string()),
             result.err().unwrap()
         )
     }

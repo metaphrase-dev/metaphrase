@@ -1,6 +1,6 @@
 use crate::{
     authentication::{authenticate_user, delete_session},
-    errors::LughError,
+    errors::MetaphraseError,
 };
 use actix_web::{http::StatusCode, web, HttpRequest, HttpResponse, Responder};
 
@@ -14,7 +14,7 @@ pub struct LoginFormData {
     password: String,
 }
 
-pub async fn login(form: web::Json<LoginFormData>) -> Result<impl Responder, LughError> {
+pub async fn login(form: web::Json<LoginFormData>) -> Result<impl Responder, MetaphraseError> {
     let (user, session) = authenticate_user(&form.email, &form.password)?;
 
     let new_session = NewSession {
@@ -26,7 +26,7 @@ pub async fn login(form: web::Json<LoginFormData>) -> Result<impl Responder, Lug
     Ok(web::Json(new_session).with_status(StatusCode::CREATED))
 }
 
-pub async fn logout(request: HttpRequest) -> Result<impl Responder, LughError> {
+pub async fn logout(request: HttpRequest) -> Result<impl Responder, MetaphraseError> {
     if let Some(current_session) = request.extensions().get::<Session>() {
         delete_session(current_session.token.as_str())?;
     }

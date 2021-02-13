@@ -3,12 +3,12 @@ use std::collections::HashMap;
 
 use crate::models::*;
 use crate::schema::settings::dsl::*;
-use crate::{database, errors::LughError};
+use crate::{database, errors::MetaphraseError};
 
 use actix_web::web;
 use actix_web::Responder;
 
-pub async fn index() -> Result<impl Responder, LughError> {
+pub async fn index() -> Result<impl Responder, MetaphraseError> {
     let connection = database::establish_connection()?;
 
     let results = settings
