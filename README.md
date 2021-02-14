@@ -1,15 +1,13 @@
-# Lugh
+# Metaphrase
 
-_Lugh_ is a copy (writings, translations, etc.) manager that you can host on
+_Metaphrase_ is a copy (writings, translations, etc.) manager that you can host on
 your server or computer.
-
-[![Build Status](https://travis-ci.org/rlustin/lugh.svg?branch=master)](https://travis-ci.org/rlustin/lugh)
 
 ## Install
 
 To make sure you don't run into trouble, make sure you have both `npm` and
 `libsqlite3-dev` installed on your computer, as they are requirements (for
-building the frontend part and the storage part of Lugh).
+building the frontend part and the storage part of Metaphrase).
 
 ```console
 make install
@@ -22,7 +20,7 @@ Configuration is made with environment variables:
 ```console
 DATABASE_URL=database.sqlite
 DATABASE_BUSY_TIMEOUT=250
-LUGH_BIND=127.0.0.1:3000
+METAPHRASE_BIND=127.0.0.1:3000
 ```
 
 ## Migrate database
@@ -47,19 +45,19 @@ make run
 
 ### Frontend
 
-The frontend embedded project is handled using [Brunch.io](http://brunch.io)
-which handle all the hassle of modern JS development in a simple, clean way.
-
-To hack the frontend:
+To hack the frontend (after running `make install` at least):
 
 ```console
 cd src/frontend
-brunch watch
+npm run dev
 ```
 
-Brunch will take care of downloading all what is necessary to run the frontend
-and build everything, then watch for your changes to build it to the
-`src/frontend/public` folder where the Rust part will serve it.
+The frontend project is handled using [ViteJS](https://vitejs.dev/), so you
+should have a very quick feedback loop on your changes. It's also configured
+so it will mirror the calls to the backend engine as soon as it is run on
+default URLs (backend on `localhost:3000` and frontend on `localhost:3100`).
+Feel free to edit the `src/frontend/vite.config.js` locally to change those
+values.
 
 ## Tests
 

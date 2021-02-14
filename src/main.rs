@@ -13,16 +13,16 @@ async fn main() -> std::io::Result<()> {
 
     TermLogger::init(LevelFilter::Info, Config::default(), TerminalMode::Mixed).unwrap();
 
-    let bind = env::var("LUGH_BIND").unwrap_or_else(|_| "localhost:3000".to_string());
+    let bind = env::var("METAPHRASE_BIND").unwrap_or_else(|_| "localhost:3000".to_string());
     info!("Start application on {}", bind);
 
     HttpServer::new(|| {
         App::new()
-            .wrap(lugh::logger::RequestLogger)
+            .wrap(metaphrase::logger::RequestLogger)
             .service(
                 web::scope("/api/v1")
-                    .wrap(lugh::authentication::middleware::Authentication)
-                    .configure(lugh::api::v1::config),
+                    .wrap(metaphrase::authentication::middleware::Authentication)
+                    .configure(metaphrase::api::v1::config),
             )
             .service(fs::Files::new("/", "./src/frontend/dist/").index_file("index.html"))
     })

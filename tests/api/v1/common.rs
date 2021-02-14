@@ -7,7 +7,7 @@ use test::TestRequest;
 use time::PrimitiveDateTime;
 
 use crate::*;
-use lugh;
+use metaphrase;
 
 trait BodyTest {
     fn as_str(&self) -> &str;
@@ -38,9 +38,9 @@ pub async fn call_server(
 ) -> ServiceResponse<Body> {
     let mut app = test::init_service(
         App::new()
-            .wrap(lugh::logger::RequestLogger)
-            .wrap(lugh::authentication::middleware::Authentication)
-            .service(web::scope("/api/v1").configure(lugh::api::v1::config)),
+            .wrap(metaphrase::logger::RequestLogger)
+            .wrap(metaphrase::authentication::middleware::Authentication)
+            .service(web::scope("/api/v1").configure(metaphrase::api::v1::config)),
     )
     .await;
 

@@ -15,7 +15,7 @@ mod tests {
         let (response, result) = get("/api/v1/", valid_token()).await;
 
         assert_eq!(StatusCode::OK, response.status());
-        assert_eq!(result, "Welcome to Lugh API!");
+        assert_eq!(result, "Welcome to Metaphrase API!");
     }
 
     #[actix_rt::test]

@@ -24,7 +24,7 @@ DATABASE_URL=$TEST_DATABASE_URL diesel setup
 
 sqlite3 $TEST_DATABASE_URL ".read tests/fixtures.sql"
 
-DATABASE_URL=$TEST_DATABASE_URL LUGH_BIND=$TEST_LUGH_BIND cargo test $TEST -- --nocapture
+DATABASE_URL=$TEST_DATABASE_URL METAPHRASE_BIND=$TEST_METAPHRASE_BIND cargo test $TEST -- --nocapture
 
 teardown
 

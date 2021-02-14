@@ -20,12 +20,5 @@ rustup override set stable
 # diesel_cli
 cargo install diesel_cli --no-default-features --features "sqlite" --force
 
-# brunch
-if [[ "$OSTYPE" == "linux-gnu" ]]; then
-	# Linux
-	sudo npm install -g brunch
-elif [[ "$OSTYPE" == "darwin"* ]]; then
-	# macOS
-	# Let’s assume npm was installed via homebrew
- 	npm install -g brunch
-fi
+# frontend dependancies and vite runtime
+cd src/frontend && npm install

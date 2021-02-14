@@ -1,9 +1,9 @@
-use super::errors::LughError;
+use super::errors::MetaphraseError;
 use diesel::prelude::*;
 use diesel::sqlite::SqliteConnection;
 use std::env;
 
-pub fn establish_connection() -> Result<SqliteConnection, LughError> {
+pub fn establish_connection() -> Result<SqliteConnection, MetaphraseError> {
     let database_url = env::var("DATABASE_URL").unwrap();
     let busy_timeout = env::var("DATABASE_BUSY_TIMEOUT").unwrap_or_else(|_| "250".to_string());
 
