@@ -29,10 +29,12 @@
 </template>
 
 <script>
-import IconFile from "/@vite-icons/mdi/file.vue";
-import IconFolder from "/@vite-icons/mdi/folder.vue";
-import IconChevronRight from "/@vite-icons/mdi/chevron-right.vue";
-import IconTrash from "/@vite-icons/mdi/trash.vue";
+import {
+  IconFile,
+  IconFolder,
+  IconChevronRight,
+  IconTrash,
+} from "../assets/Icons.jsx";
 
 export default {
   name: "translation-key",

@@ -10,9 +10,7 @@
 </template>
 
 <script>
-import IconFile from "/@vite-icons/mdi/file.vue";
-import IconFolder from "/@vite-icons/mdi/folder.vue";
-import IconChevronRight from "/@vite-icons/mdi/chevron-right.vue";
+import { IconFile, IconFolder, IconChevronRight } from "../assets/Icons.jsx";
 import _ from "lodash";
 
 export default {

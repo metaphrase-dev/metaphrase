@@ -29,8 +29,7 @@
 </template>
 
 <script>
-import IconSearch from "/@vite-icons/mdi/search.vue";
-import IconChevronRight from "/@vite-icons/mdi/chevron-right.vue";
+import { IconChevronRight, IconSearch } from "../assets/Icons.jsx";
 
 import NavigationKey from "./NavigationKey.vue";
 import _ from "lodash";
@@ -136,6 +135,8 @@ export default {
   top: 50%;
   transform: translateY(-50%) !important;
   color: grey;
+  width: 16px;
+  height: 16px;
 }
 
 .search-bar input {

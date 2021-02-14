@@ -282,6 +282,8 @@ body {
   margin-left: 6px;
   margin-top: 8px;
   color: grey;
+  width: 16px;
+  height: 16px;
 }
 
 .icon-prepend + input {

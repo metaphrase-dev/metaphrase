@@ -29,7 +29,7 @@
 </template>
 
 <script>
-import IconCheck from "/@vite-icons/mdi/check.vue";
+import { IconCheck } from "../assets/Icons.jsx";
 import Flag from "./Flag.vue";
 
 export default {

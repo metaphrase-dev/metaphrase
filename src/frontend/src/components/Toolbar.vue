@@ -1,18 +1,18 @@
 <template>
   <div id="toolbar">
     <h1>Metaphrase</h1>
-    <button @click="logout"><IconLogoutVariant /> Logout</button>
+    <button @click="logout"><IconLogout /> Logout</button>
   </div>
 </template>
 
 <script>
-import IconLogoutVariant from "/@vite-icons/mdi/logout-variant.vue";
+import { IconLogout } from "../assets/Icons.jsx";
 
 export default {
   name: "toolbar",
 
   components: {
-    IconLogoutVariant,
+    IconLogout,
   },
 
   methods: {
@@ -37,6 +37,8 @@ export default {
 }
 
 #toolbar button {
+  display: inline-flex;
+  padding: 3px 8px;
   border: 1px solid black;
   background-color: rgba(255, 255, 255, 0.2);
   color: white;
@@ -61,5 +63,9 @@ export default {
 
 #toolbar button::-moz-focus-inner {
   border: 0;
+}
+
+#toolbar button svg {
+  margin-right: 5px;
 }
 </style>

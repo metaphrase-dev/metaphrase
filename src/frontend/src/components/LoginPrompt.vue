@@ -14,17 +14,19 @@
       </label>
       <p class="error" v-if="loginError"><IconWarning /> {{ loginError }}</p>
       <p class="controls">
-        <button><IconLoginVariant /> Login</button>
+        <button><IconLogin /> Login</button>
       </p>
     </form>
   </div>
 </template>
 
 <script>
-import IconUser from "/@vite-icons/mdi/user.vue";
-import IconLock from "/@vite-icons/mdi/lock.vue";
-import IconWarning from "/@vite-icons/mdi/warning.vue";
-import IconLoginVariant from "/@vite-icons/mdi/login-variant.vue";
+import {
+  IconUser,
+  IconLock,
+  IconWarning,
+  IconLogin,
+} from "../assets/Icons.jsx";
 
 export default {
   name: "login-prompt",
@@ -33,7 +35,7 @@ export default {
     IconUser,
     IconLock,
     IconWarning,
-    IconLoginVariant,
+    IconLogin,
   },
 
   data() {
@@ -113,9 +115,11 @@ export default {
 
 .login-dialog input + svg {
   position: absolute;
-  left: 25px;
-  margin-top: -1.65em;
+  left: 28px;
+  margin-top: -24px;
   color: #aaaaaa;
+  width: 16px;
+  height: 16px;
 }
 
 .login-dialog input:active + svg,
@@ -148,6 +152,8 @@ export default {
   background-color: #eeeeee;
   border: 1px solid #aaaaaa;
   outline: none;
+  display: inline-flex;
+  align-items: center;
 }
 
 .login-dialog .controls button::-moz-focus-inner {
@@ -169,6 +175,10 @@ export default {
   box-shadow: 0 0 1px 1px rgba(0, 0, 0, 0.2);
 }
 
+.login-dialog .controls button svg {
+  margin-right: 5px;
+}
+
 .login-dialog .error {
   border: 1px solid darkred;
   color: darkred;
@@ -176,5 +186,9 @@ export default {
   background-color: #ffc8ca;
   margin: 15px -20px 5px;
   padding: 5px 20px;
+}
+
+.login-dialog .error svg {
+  vertical-align: -33%;
 }
 </style>
