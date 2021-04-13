@@ -80,39 +80,3 @@ export default {
   },
 };
 </script>
-
-<style>
-.translation-key {
-  padding: 10px;
-  font-weight: bold;
-  font-size: 10pt;
-  border-bottom: 1px solid grey;
-  background-color: #ececec;
-}
-
-.translation-crumb {
-  display: inline-block;
-}
-
-.translation-crumb-separator + span {
-  font-size: 0;
-}
-
-.translation-key-delete {
-  float: right;
-  border: 1px solid currentColor;
-  background: transparent;
-  padding: 2px;
-  margin-top: -2px;
-  margin-bottom: -2px;
-  vertical-align: bottom;
-  border-radius: 2px;
-
-  color: #850101;
-}
-
-.translation-key-delete:focus,
-.translation-key-delete:active {
-  box-shadow: 0 0 0 1px #850101 inset;
-}
-</style>

@@ -2,13 +2,13 @@
   <div id="main" :class="{ 'with-modal': modalShown }">
     <template v-if="loggedIn">
       <Toolbar @logout="didLogOut" />
-      <div id="workspace">
-        <NavigationBar
+      <div id="workspace" class="flex w-full items-stretch">
+        <NavigationPanel
           :translation-keys="translationKeys"
           :namespace="relevantNamespace"
           @namespaceChanged="updateNamespace"
         />
-        <div id="translation-list">
+        <div id="translation-list" class="flex-grow">
           <CollectionToolbar @showAddNewKey="showModal('add-new-key')" />
           <TranslationGroup
             v-for="key in filteredTranslationKeys"
@@ -36,7 +36,7 @@
 import Toolbar from "./components/Toolbar.vue";
 import TranslationGroup from "./components/TranslationGroup.vue";
 import CollectionToolbar from "./components/CollectionToolbar.vue";
-import NavigationBar from "./components/NavigationBar.vue";
+import NavigationPanel from "./components/NavigationPanel.vue";
 import LoginPrompt from "./components/LoginPrompt.vue";
 
 import AddNewKeyModal from "./components/modals/AddNewKeyModal.vue";
@@ -104,7 +104,7 @@ export default {
   components: {
     Toolbar,
     TranslationGroup,
-    NavigationBar,
+    NavigationPanel,
     LoginPrompt,
     CollectionToolbar,
 
@@ -170,6 +170,10 @@ export default {
 </script>
 
 <style>
+#workspace {
+  min-height: calc(100vh - 3rem);
+}
+/*
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
     "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
@@ -327,4 +331,5 @@ footer {
   padding: 10px;
   text-align: right;
 }
+*/
 </style>

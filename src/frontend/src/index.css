@@ -1,0 +1,30 @@
+@import "assets/fonts/inter.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+  font-family: "Inter", sans-serif;
+}
+
+.bz-left-15px {
+  clip-path: polygon(15px 0, 100% 0, 100% 100%, 0 100%);
+}
+
+.bz-right-15px {
+  clip-path: polygon(0 0, 100% 0, calc(100% - 15px) 100%, 0 100%);
+}
+
+.mr-negative-15px {
+  margin-right: -15px;
+}
+
+.grid-cols-main {
+  grid-template-columns: 1fr 2fr 1fr;
+}
+
+.placeholder-italic::placeholder {
+  font-style: italic;
+}

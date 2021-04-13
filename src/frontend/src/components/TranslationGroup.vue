@@ -1,37 +1,30 @@
 <template>
   <div class="translation-group">
     <TranslationKey :translation-key="translationKey" />
-    <TranslationLocale v-for="translation in translations"
+    <TranslationLocale
+      v-for="translation in translations"
       :key="translation"
       :translation="translation"
-      :translation-key="translationKey" />
+      :translation-key="translationKey"
+    />
   </div>
 </template>
 
 <script>
-  import TranslationKey from "./TranslationKey.vue";
-  import TranslationLocale from "./TranslationLocale.vue";
+import TranslationKey from "./TranslationKey.vue";
+import TranslationLocale from "./TranslationLocale.vue";
 
-  export default ({
-    name: 'translation-group',
+export default {
+  name: "translation-group",
 
-    props: {
-      translations: Array,
-      translationKey: String
-    },
+  props: {
+    translations: Array,
+    translationKey: String,
+  },
 
-    components: {
-      TranslationKey,
-      TranslationLocale
-    }
-  });
+  components: {
+    TranslationKey,
+    TranslationLocale,
+  },
+};
 </script>
-
-<style>
-  .translation-group {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    border-bottom: 1px solid grey;
-  }
-</style>

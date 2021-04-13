@@ -1,8 +1,18 @@
 <template>
-  <div id="navigation-bar">
-    <div class="search-bar">
-      <input type="search" placeholder="Search for a key…" v-model="needle" />
-      <IconSearch />
+  <div
+    id="navigation-panel"
+    class="w-72 border-r border-indigo-800 bg-goose-100"
+  >
+    <div
+      class="location-bar flex flex-row bg-indigo-800 items-center pl-4 pr-4 h-12 bz-right-15px mr-negative-15px"
+    >
+      <input
+        class="flex-grow flex-shrink min-w-0 w-auto"
+        type="search"
+        placeholder="Search for a key…"
+        v-model="needle"
+      />
+      <IconSearch class="flex-none ml-2" />
     </div>
     <ul class="nav-translation-key-list">
       <li
@@ -110,44 +120,3 @@ export default {
   },
 };
 </script>
-
-<style>
-#navigation-bar {
-  display: flex;
-  flex-direction: column;
-  width: 260px;
-  background-color: #e6eaef;
-  border-right: 1px solid #777777;
-}
-
-.search-bar {
-  flex: 0 0 39px;
-  display: flex;
-  background-color: lightgrey;
-  border-bottom: 1px solid grey;
-  position: relative;
-}
-
-.search-bar input + svg {
-  font-size: 9pt;
-  position: absolute;
-  left: 10px;
-  top: 50%;
-  transform: translateY(-50%) !important;
-  color: grey;
-  width: 16px;
-  height: 16px;
-}
-
-.search-bar input {
-  flex: 1;
-  margin: 5px;
-  border-radius: 3px;
-  border: 1px solid grey;
-  padding-left: 24px;
-}
-
-.search-bar input:focus + svg {
-  color: black;
-}
-</style>
