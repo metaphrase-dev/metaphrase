@@ -1,26 +1,46 @@
+import { reactive } from "vue";
+
 export default class {
   constructor() {
-    this.groupedTranslations = [];
     this.namespace = window.location.hash.substring(1);
 
-    this.token = null;
-    this.userId = null;
-    this.expiredAt = null;
+    this.data = reactive({
+      token: null,
+      groupedTranslations: [],
+      userId: null,
+      expiredAt: null,
+    });
+  }
+
+  get token() {
+    return this.data.token;
+  }
+
+  get userId() {
+    return this.data.userId;
+  }
+
+  get expiredAt() {
+    return this.data.expiredAt;
+  }
+
+  get groupedTranslations() {
+    return this.data.groupedTranslations;
   }
 
   applyLocalStorage() {
     // Fill store on login based on localStorage content
     if (window.localStorage.getItem("token") !== null) {
-      this.token = localStorage.getItem("token");
-      this.userId = localStorage.getItem("userId");
-      this.expiredAt = localStorage.getItem("expiredAt");
+      this.data.token = localStorage.getItem("token");
+      this.data.userId = localStorage.getItem("userId");
+      this.data.expiredAt = localStorage.getItem("expiredAt");
     }
   }
 
   saveToken(token, userId, expiredAt) {
-    this.token = token;
-    this.userId = userId;
-    this.expiredAt = expiredAt;
+    this.data.token = token;
+    this.data.userId = userId;
+    this.data.expiredAt = expiredAt;
 
     localStorage.setItem("token", token);
     localStorage.setItem("userId", userId);
@@ -28,9 +48,9 @@ export default class {
   }
 
   resetToken() {
-    this.token = null;
-    this.userId = null;
-    this.expiredAt = null;
+    this.data.token = null;
+    this.data.userId = null;
+    this.data.expiredAt = null;
 
     localStorage.removeItem("token");
     localStorage.removeItem("userId");
@@ -40,7 +60,7 @@ export default class {
   headers() {
     if (this.token) {
       return new Headers({
-        Authorization: `Bearer ${this.token}`,
+        Authorization: `Bearer ${this.data.token}`,
         "Content-Type": "application/json",
       });
     } else {
@@ -76,7 +96,7 @@ export default class {
         }
       })
       .then((data) => {
-        this.groupedTranslations = data;
+        this.data.groupedTranslations = data;
       });
   }
 }
