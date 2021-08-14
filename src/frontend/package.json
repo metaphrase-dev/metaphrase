@@ -14,16 +14,16 @@
     "serve": "vite preview"
   },
   "dependencies": {
-    "vue": "^3.0.5",
-    "lodash": "^4.17.20"
+    "vue": "^3.2.2",
+    "lodash": "^4.17.21"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^1.1.4",
-    "@vitejs/plugin-vue-jsx": "^1.1.0",
-    "@vue/compiler-sfc": "^3.0.5",
-    "autoprefixer": "^10.2.5",
-    "postcss": "^8.2.10",
-    "tailwindcss": "^2.1.1",
-    "vite": "^2.0.0-beta.65"
+    "@vitejs/plugin-vue": "^1.4.0",
+    "@vitejs/plugin-vue-jsx": "^1.1.7",
+    "@vue/compiler-sfc": "^3.2.2",
+    "autoprefixer": "^10.3.1",
+    "postcss": "^8.3.6",
+    "tailwindcss": "^2.2.7",
+    "vite": "^2.4.4"
   }
 }
