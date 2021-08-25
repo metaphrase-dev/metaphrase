@@ -1,8 +1,12 @@
+use fs::NamedFile;
 use simplelog::{Config, LevelFilter, TermLogger, TerminalMode};
 use std::env;
 
 use actix_files as fs;
-use actix_web::{web, App, HttpServer};
+use actix_web::{
+    dev::{ServiceRequest, ServiceResponse},
+    web, App, HttpServer,
+};
 
 #[macro_use]
 extern crate log;
@@ -24,13 +28,23 @@ async fn main() -> std::io::Result<()> {
                     .wrap(metaphrase::authentication::middleware::Authentication)
                     .configure(metaphrase::api::v1::config),
             )
-            .service(fs::Files::new("/", "./src/frontend/dist/").index_file("index.html"))
+            .service(
+                fs::Files::new("/", "./src/frontend/dist/")
+                    .index_file("index.html")
+                    .default_handler(|req: ServiceRequest| {
+                        let (http_req, _payload) = req.into_parts();
+
+                        async {
+                            let response = NamedFile::open("./src/frontend/dist/index.html")?
+                                .into_response(&http_req)?;
+                            Ok(ServiceResponse::new(http_req, response))
+                        }
+                    }),
+            )
     })
     .bind(bind.as_str())?
     .run()
     .await
-
-    // api_chain.link_before(api::middleware::ContentTypeMiddleware);
 }
 
 fn check_environment_variables() {
