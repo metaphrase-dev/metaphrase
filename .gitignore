@@ -1,7 +1,7 @@
 *.sqlite
 /target/
 /src/frontend/node_modules/
-/src/frontend/public/
+/src/frontend/dist/
 .env
 
 # Numerous always-ignore extensions
