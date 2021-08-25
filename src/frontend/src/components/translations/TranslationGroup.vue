@@ -1,9 +1,9 @@
 <template>
-  <div class="translation-group">
+  <div class="translation-group bg-gray-100 odd:bg-indigo-100 mb-1px">
     <TranslationKey :translation-key="translationKey" />
     <TranslationLocale
       v-for="translation in translations"
-      :key="translation"
+      :key="translation.locale"
       :translation="translation"
       :translation-key="translationKey"
     />
@@ -11,8 +11,8 @@
 </template>
 
 <script>
-import TranslationKey from "./TranslationKey.vue";
-import TranslationLocale from "./TranslationLocale.vue";
+import TranslationKey from "../translations/TranslationKey.vue";
+import TranslationLocale from "../translations/TranslationLocale.vue";
 
 export default {
   name: "translation-group",

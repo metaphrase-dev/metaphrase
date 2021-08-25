@@ -7,9 +7,7 @@
     tabindex="-1"
     @keyup.escape="closeModal"
   >
-    <div
-      class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center"
-    >
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center">
       <div
         class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity"
         aria-hidden="true"
@@ -24,25 +22,20 @@
             <IconPlus />
           </div>
           <div class="mt-2 pl-5 justify-start">
-            <h3
-              class="text-lg leading-6 font-medium text-gray-900"
-              id="modal-title"
-            >
+            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
               Add a new key
             </h3>
             <div class="mt-2">
               <label for="new-key-input" class="text-sm text-gray-500">
-                Please provide the new <strong>key path and name</strong>,
-                joined by a dot.
+                Please provide the new
+                <strong>key path and name</strong>, joined by a dot.
               </label>
             </div>
           </div>
         </div>
         <form @submit.prevent="submit" class="ml-5">
           <div class="flex ml-16 mr-4 items-center">
-            <IconKey
-              class="text-indigo-600 flex-none -mr-8 position-relative z-10"
-            />
+            <IconKey class="text-indigo-600 flex-none -mr-8 position-relative z-10" />
             <input
               autofocus
               id="new-key-input"
@@ -54,9 +47,7 @@
           </div>
 
           <footer>
-            <div
-              class="bg-gray-50 px-4 py-3 flex flex-row-reverse rounded-b-lg"
-            >
+            <div class="bg-gray-50 px-4 py-3 flex flex-row-reverse rounded-b-lg">
               <button
                 type="submit"
                 class="inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ml-3"
@@ -79,7 +70,10 @@
 </template>
 
 <script>
-import { IconClose, IconPlus, IconKey } from "../../assets/Icons.jsx";
+import { IconClose, IconPlus, IconKey } from "../../assets/Icons24.jsx";
+import Store from "../../store.js";
+
+const $store = new Store();
 
 export default {
   name: "add-new-key-modal",
@@ -92,14 +86,12 @@ export default {
 
   data() {
     return {
-      newKey:
-        this.currentNamespace.length > 0 ? `${this.currentNamespace}.` : "",
+      newKey: this.currentNamespace.length > 0 ? `${this.currentNamespace}.` : "",
     };
   },
 
   props: {
     currentNamespace: String,
-    store: Object,
   },
 
   created() {
@@ -116,9 +108,26 @@ export default {
     },
 
     submit() {
-      this.$emit("submitModal", "add-new-key", {
-        newKey: this.newKey,
-      });
+      $store
+        .callApi(
+          "/api/v1/translations",
+          "POST",
+          // FIXME: It would be better to bootstrap the content of this
+          //        empty translation with content from fields in the modal.
+          {
+            key: this.newKey,
+            locale: "fr",
+            content: "",
+          }
+        )
+        .then((response) => response.json())
+        .then((data) => {
+          // TODO: Add incremental fetch here not to refresh all the
+          //       translation store.
+          $store.fetchTranslations();
+
+          this.$emit("closeModal");
+        });
     },
   },
 };

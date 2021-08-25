@@ -1,46 +1,45 @@
-import { reactive } from "vue";
+import { reactive, ref } from "vue";
+
+const data = reactive({
+  token: null,
+  /**
+   * @type {[key as String]: Object}
+   */
+  groupedTranslations: {},
+  userId: null,
+  expiredAt: null,
+});
 
 export default class {
-  constructor() {
-    this.namespace = window.location.hash.substring(1);
-
-    this.data = reactive({
-      token: null,
-      groupedTranslations: [],
-      userId: null,
-      expiredAt: null,
-    });
-  }
-
   get token() {
-    return this.data.token;
+    return data.token;
   }
 
   get userId() {
-    return this.data.userId;
+    return data.userId;
   }
 
   get expiredAt() {
-    return this.data.expiredAt;
+    return data.expiredAt;
   }
 
   get groupedTranslations() {
-    return this.data.groupedTranslations;
+    return data.groupedTranslations;
   }
 
   applyLocalStorage() {
     // Fill store on login based on localStorage content
     if (window.localStorage.getItem("token") !== null) {
-      this.data.token = localStorage.getItem("token");
-      this.data.userId = localStorage.getItem("userId");
-      this.data.expiredAt = localStorage.getItem("expiredAt");
+      data.token = localStorage.getItem("token");
+      data.userId = localStorage.getItem("userId");
+      data.expiredAt = localStorage.getItem("expiredAt");
     }
   }
 
   saveToken(token, userId, expiredAt) {
-    this.data.token = token;
-    this.data.userId = userId;
-    this.data.expiredAt = expiredAt;
+    data.token = token;
+    data.userId = userId;
+    data.expiredAt = expiredAt;
 
     localStorage.setItem("token", token);
     localStorage.setItem("userId", userId);
@@ -48,9 +47,9 @@ export default class {
   }
 
   resetToken() {
-    this.data.token = null;
-    this.data.userId = null;
-    this.data.expiredAt = null;
+    data.token = null;
+    data.userId = null;
+    data.expiredAt = null;
 
     localStorage.removeItem("token");
     localStorage.removeItem("userId");
@@ -60,7 +59,7 @@ export default class {
   headers() {
     if (this.token) {
       return new Headers({
-        Authorization: `Bearer ${this.data.token}`,
+        Authorization: `Bearer ${this.token}`,
         "Content-Type": "application/json",
       });
     } else {
@@ -71,7 +70,7 @@ export default class {
   callApi(url, method, data) {
     let jsonData = undefined;
     if (data !== undefined) {
-      jsonData = JSON["stringify"](data);
+      jsonData = JSON.stringify(data);
     }
 
     return fetch(url, {
@@ -90,13 +89,11 @@ export default class {
         } else if (response.status === 401 || response.status === 403) {
           this.resetToken();
         } else {
-          console.error(
-            `Received ${response.status} status while fetching translations, aborting`
-          );
+          console.error(`Received ${response.status} status while fetching translations, aborting`);
         }
       })
-      .then((data) => {
-        this.data.groupedTranslations = data;
+      .then((apiData) => {
+        data.groupedTranslations = apiData;
       });
   }
 }

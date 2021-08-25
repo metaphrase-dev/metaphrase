@@ -28,3 +28,11 @@ body {
 .placeholder-italic::placeholder {
   font-style: italic;
 }
+
+.text-0 {
+  font-size: 0;
+}
+
+.mb-1px {
+  margin-bottom: 1px;
+}
