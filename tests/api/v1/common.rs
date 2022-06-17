@@ -1,32 +1,23 @@
 use actix_web::{
-    dev::{Body, ResponseBody, ServiceResponse},
+    body::to_bytes,
+    dev::ServiceResponse,
     http::{self, Method},
+    web::Bytes,
 };
 use actix_web::{test, web, App};
 use test::TestRequest;
-use time::PrimitiveDateTime;
+use time::{format_description::well_known, PrimitiveDateTime};
 
 use crate::*;
 use metaphrase;
 
 trait BodyTest {
-    fn as_str(&self) -> &str;
+    fn to_string(&self) -> String;
 }
 
-impl BodyTest for ResponseBody<Body> {
-    fn as_str(&self) -> &str {
-        match self {
-            ResponseBody::Body(ref b) => match b {
-                Body::Bytes(ref by) => std::str::from_utf8(&by).unwrap(),
-                Body::Empty => "",
-                _ => panic!("can't read the body?? {:#?}", b),
-            },
-            ResponseBody::Other(ref b) => match b {
-                Body::Bytes(ref by) => std::str::from_utf8(&by).unwrap(),
-                Body::Empty => "",
-                _ => panic!("can't read the body?? {:#?}", b),
-            },
-        }
+impl BodyTest for Bytes {
+    fn to_string(&self) -> String {
+        std::str::from_utf8(self).unwrap().to_string()
     }
 }
 
@@ -35,7 +26,7 @@ pub async fn call_server(
     path: &'static str,
     body: Option<String>,
     token: Option<String>,
-) -> ServiceResponse<Body> {
+) -> ServiceResponse {
     let mut app = test::init_service(
         App::new()
             .wrap(metaphrase::logger::RequestLogger)
@@ -52,29 +43,20 @@ pub async fn call_server(
     test::call_service(&mut app, req).await
 }
 
-pub async fn delete(path: &'static str, token: Option<String>) -> (ServiceResponse, String) {
-    let response: ServiceResponse = call_server(Method::DELETE, path, None, token).await;
-    let body = response.response().body().as_str().to_string();
-
-    (response, body)
+pub async fn delete(path: &'static str, token: Option<String>) -> ServiceResponse {
+    call_server(Method::DELETE, path, None, token).await
 }
 
-pub async fn get(path: &'static str, token: Option<String>) -> (ServiceResponse, String) {
-    let response: ServiceResponse = call_server(Method::GET, path, None, token).await;
-    let body = response.response().body().as_str().to_string();
-
-    (response, body)
+pub async fn get(path: &'static str, token: Option<String>) -> ServiceResponse {
+    call_server(Method::GET, path, None, token).await
 }
 
 pub async fn post(
     path: &'static str,
     body: Option<String>,
     token: Option<String>,
-) -> (ServiceResponse, String) {
-    let response: ServiceResponse = call_server(Method::POST, path, body, token).await;
-    let response_body = response.response().body().as_str().to_string();
-
-    (response, response_body)
+) -> ServiceResponse {
+    call_server(Method::POST, path, body, token).await
 }
 
 pub fn valid_token() -> Option<String> {
@@ -84,7 +66,8 @@ pub fn valid_token() -> Option<String> {
 pub fn has_happened_now(time_str: &str) -> bool {
     use time::{Duration, OffsetDateTime};
 
-    let time: PrimitiveDateTime = time::parse(time_str, "%F %T").unwrap();
+    let time: PrimitiveDateTime =
+        time::PrimitiveDateTime::parse(time_str, &well_known::Rfc3339).unwrap();
     let time_utc = time.assume_utc();
     let now = OffsetDateTime::now_utc();
     let min = now - Duration::seconds(2);
@@ -94,7 +77,7 @@ pub fn has_happened_now(time_str: &str) -> bool {
 
 fn add_token_header(req: TestRequest, token: &Option<String>) -> TestRequest {
     if let Some(token) = token {
-        req.header(http::header::AUTHORIZATION, format!("Bearer {}", token))
+        req.insert_header((http::header::AUTHORIZATION, format!("Bearer {}", token)))
     } else {
         req
     }
@@ -103,8 +86,12 @@ fn add_token_header(req: TestRequest, token: &Option<String>) -> TestRequest {
 fn add_body(req: TestRequest, body: &Option<String>) -> TestRequest {
     if let Some(body) = body {
         req.set_payload(body.clone())
-            .header(http::header::CONTENT_TYPE, "application/json")
+            .insert_header((http::header::CONTENT_TYPE, "application/json"))
     } else {
-        req.header(http::header::CONTENT_TYPE, "application/json")
+        req.insert_header((http::header::CONTENT_TYPE, "application/json"))
     }
+}
+
+pub async fn body_as_string(response: ServiceResponse) -> String {
+    to_bytes(response.into_body()).await.unwrap().to_string()
 }

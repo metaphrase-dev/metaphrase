@@ -14,10 +14,9 @@ mod tests {
 
     #[actix_rt::test]
     async fn test_create_without_body() {
-        let (response, content) = post("/api/v1/users", None, valid_token()).await;
+        let response = post("/api/v1/users", None, valid_token()).await;
 
         assert_eq!(StatusCode::BAD_REQUEST, response.status());
-        assert_eq!("", content)
     }
 
     #[actix_rt::test]
@@ -27,10 +26,9 @@ mod tests {
             password: Some("p4ssw0rd"),
         };
 
-        let (response, content) = post_user(&new_user, None).await;
+        let response = post_user(&new_user, None).await;
 
         assert_eq!(StatusCode::UNAUTHORIZED, response.status());
-        assert_eq!("", content);
     }
 
     #[actix_rt::test]
@@ -40,7 +38,7 @@ mod tests {
             password: Some("p4ssw0rd"),
         };
 
-        let (response, _) = post_user(&new_user, valid_token()).await;
+        let response = post_user(&new_user, valid_token()).await;
 
         assert_eq!(StatusCode::BAD_REQUEST, response.status());
     }
@@ -52,7 +50,7 @@ mod tests {
             password: None,
         };
 
-        let (response, _) = post_user(&new_user, valid_token()).await;
+        let response = post_user(&new_user, valid_token()).await;
 
         assert_eq!(StatusCode::BAD_REQUEST, response.status());
     }
@@ -64,12 +62,12 @@ mod tests {
             password: Some("p4ssw0rd"),
         };
 
-        let (response, _) = post_user(&new_user, valid_token()).await;
+        let response = post_user(&new_user, valid_token()).await;
 
         assert_eq!(StatusCode::CREATED, response.status());
     }
 
-    async fn post_user(user: &NewUser, token: Option<String>) -> (ServiceResponse, String) {
+    async fn post_user(user: &NewUser, token: Option<String>) -> ServiceResponse {
         let body = serde_json::to_string(&user).unwrap();
 
         post("/api/v1/users", Some(body), token).await

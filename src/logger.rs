@@ -1,7 +1,6 @@
 extern crate time;
 
 use std::convert::TryInto;
-
 use std::pin::Pin;
 use std::task::{Context, Poll};
 
@@ -9,10 +8,11 @@ use actix_service::{Service, Transform};
 use actix_web::{dev::ServiceRequest, dev::ServiceResponse, Error};
 use futures_util::future::Future;
 use futures_util::future::{ok, Ready};
+use time::format_description::well_known;
 use time::OffsetDateTime;
 
 fn precise_time_ns() -> u64 {
-    (OffsetDateTime::now_utc() - OffsetDateTime::unix_epoch())
+    (OffsetDateTime::now_utc() - OffsetDateTime::UNIX_EPOCH)
         .whole_nanoseconds()
         .try_into()
         .unwrap_or(0)
@@ -20,13 +20,12 @@ fn precise_time_ns() -> u64 {
 
 pub struct RequestLogger;
 
-impl<S, B> Transform<S> for RequestLogger
+impl<S, B> Transform<S, ServiceRequest> for RequestLogger
 where
-    S: Service<Request = ServiceRequest, Response = ServiceResponse<B>, Error = Error>,
+    S: Service<ServiceRequest, Response = ServiceResponse<B>, Error = Error>,
     S::Future: 'static,
     B: 'static,
 {
-    type Request = ServiceRequest;
     type Response = ServiceResponse<B>;
     type Error = Error;
     type InitError = ();
@@ -44,22 +43,21 @@ pub struct RequestLoggerMiddleware<S> {
 
 type BoxedFutureOutput<SR, SE> = Box<dyn Future<Output = Result<SR, SE>>>;
 
-impl<S, B> Service for RequestLoggerMiddleware<S>
+impl<S, B> Service<ServiceRequest> for RequestLoggerMiddleware<S>
 where
-    S: Service<Request = ServiceRequest, Response = ServiceResponse<B>, Error = Error>,
+    S: Service<ServiceRequest, Response = ServiceResponse<B>, Error = Error>,
     S::Future: 'static,
     B: 'static,
 {
-    type Request = ServiceRequest;
     type Response = ServiceResponse<B>;
     type Error = Error;
     type Future = Pin<BoxedFutureOutput<Self::Response, Self::Error>>;
 
-    fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
+    fn poll_ready(&self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
         self.service.poll_ready(cx)
     }
 
-    fn call(&mut self, req: ServiceRequest) -> Self::Future {
+    fn call(&self, req: ServiceRequest) -> Self::Future {
         let start_time = precise_time_ns();
 
         info!(
@@ -70,7 +68,9 @@ where
                 Some(ip) => format!("{}", ip),
                 None => "".to_string(),
             },
-            time::OffsetDateTime::now_utc().format("%F %T")
+            time::OffsetDateTime::now_utc()
+                .format(&well_known::Rfc3339)
+                .unwrap()
         );
 
         let fut = self.service.call(req);

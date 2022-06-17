@@ -2,6 +2,7 @@ use crate::database;
 use crate::errors::*;
 use crate::models::*;
 use diesel::{dsl::sql, prelude::*};
+use time::format_description::well_known;
 
 pub mod middleware;
 
@@ -26,7 +27,16 @@ pub fn authenticate_token(auth_token: &str) -> Result<Session, MetaphraseError> 
     {
         Ok(session) => {
             let session_expired_at =
-                time::PrimitiveDateTime::parse(session.expired_at.as_str(), "%F %T").unwrap();
+                time::PrimitiveDateTime::parse(session.expired_at.as_str(), &well_known::Rfc3339)
+                    .unwrap_or_else(|_| {
+                        time::PrimitiveDateTime::parse(
+                            session.expired_at.as_str(),
+                            time::macros::format_description!(
+                                "[year]-[month]-[day] [hour]:[minute]:[second]"
+                            ),
+                        )
+                        .unwrap()
+                    });
 
             if session_expired_at.assume_utc() > time::OffsetDateTime::now_utc() {
                 Ok(session)
@@ -112,7 +122,7 @@ fn create_session(user: &User) -> Result<Session, MetaphraseError> {
     let new_session = NewSession {
         token: generate_token()?,
         user_id: user.id,
-        expired_at: session_expired_at.format("%F %T"),
+        expired_at: session_expired_at.format(&well_known::Rfc3339).unwrap(),
     };
 
     diesel::insert_into(table)
@@ -133,6 +143,7 @@ fn generate_token() -> Result<String, MetaphraseError> {
     let token = rand::thread_rng()
         .sample_iter(&Alphanumeric)
         .take(64)
+        .map(char::from)
         .collect();
 
     Ok(token)
@@ -185,7 +196,8 @@ mod tests {
         assert_eq!(1, session.user_id);
 
         let expired_at =
-            time::PrimitiveDateTime::parse(session.expired_at.as_str(), "%F %T").unwrap();
+            time::PrimitiveDateTime::parse(session.expired_at.as_str(), &well_known::Rfc3339)
+                .unwrap();
 
         assert!(expired_at.assume_utc() > time::OffsetDateTime::now_utc());
     }

@@ -1,6 +1,7 @@
 use crate::errors::MetaphraseError;
 use crate::models::*;
-use actix_web::HttpRequest;
+use actix_web::{HttpMessage, HttpRequest};
+use time::format_description::well_known;
 use time::OffsetDateTime;
 
 pub fn current_user(req: &HttpRequest) -> Result<User, MetaphraseError> {
@@ -11,5 +12,7 @@ pub fn current_user(req: &HttpRequest) -> Result<User, MetaphraseError> {
 }
 
 pub fn now_str() -> String {
-    OffsetDateTime::now_utc().format("%F %T")
+    OffsetDateTime::now_utc()
+        .format(&well_known::Rfc3339)
+        .unwrap()
 }

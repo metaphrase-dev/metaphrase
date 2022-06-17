@@ -2,7 +2,7 @@ use crate::{
     authentication::{authenticate_user, delete_session},
     errors::MetaphraseError,
 };
-use actix_web::{http::StatusCode, web, HttpRequest, HttpResponse, Responder};
+use actix_web::{http::StatusCode, web, HttpMessage, HttpRequest, HttpResponse, Responder};
 
 use crate::models::{NewSession, Session};
 
@@ -23,7 +23,9 @@ pub async fn login(form: web::Json<LoginFormData>) -> Result<impl Responder, Met
         expired_at: session.expired_at,
     };
 
-    Ok(web::Json(new_session).with_status(StatusCode::CREATED))
+    Ok(web::Json(new_session)
+        .customize()
+        .with_status(StatusCode::CREATED))
 }
 
 pub async fn logout(request: HttpRequest) -> Result<impl Responder, MetaphraseError> {
