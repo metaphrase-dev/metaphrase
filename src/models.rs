@@ -94,6 +94,8 @@ pub struct User {
 
 #[cfg(test)]
 mod tests {
+    use time::format_description::well_known;
+
     use super::*;
 
     #[test]
@@ -118,7 +120,9 @@ mod tests {
     fn session_for_user_id(user_id: i32) -> Session {
         use time::OffsetDateTime;
 
-        let now = (&OffsetDateTime::now_utc()).format("%F %T");
+        let now = (&OffsetDateTime::now_utc())
+            .format(&well_known::Rfc3339)
+            .unwrap();
 
         Session {
             id: 1,

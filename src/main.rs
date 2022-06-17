@@ -1,5 +1,5 @@
 use fs::NamedFile;
-use simplelog::{Config, LevelFilter, TermLogger, TerminalMode};
+use simplelog::{ColorChoice, Config, LevelFilter, TermLogger, TerminalMode};
 use std::env;
 
 use actix_files as fs;
@@ -15,7 +15,13 @@ extern crate log;
 async fn main() -> std::io::Result<()> {
     check_environment_variables();
 
-    TermLogger::init(LevelFilter::Info, Config::default(), TerminalMode::Mixed).unwrap();
+    TermLogger::init(
+        LevelFilter::Info,
+        Config::default(),
+        TerminalMode::Mixed,
+        ColorChoice::Auto,
+    )
+    .unwrap();
 
     let bind = env::var("METAPHRASE_BIND").unwrap_or_else(|_| "localhost:3000".to_string());
     info!("Start application on {}", bind);
@@ -36,7 +42,7 @@ async fn main() -> std::io::Result<()> {
 
                         async {
                             let response = NamedFile::open("./src/frontend/dist/index.html")?
-                                .into_response(&http_req)?;
+                                .into_response(&http_req);
                             Ok(ServiceResponse::new(http_req, response))
                         }
                     }),

@@ -102,7 +102,9 @@ pub async fn create(
         response.warnings = linter.err().unwrap();
     }
 
-    Ok(web::Json(response).with_status(StatusCode::CREATED))
+    Ok(web::Json(response)
+        .customize()
+        .with_status(StatusCode::CREATED))
 }
 
 #[derive(Deserialize)]
@@ -176,13 +178,13 @@ pub async fn delete(params: web::Path<DeleteUrlParams>) -> Result<impl Responder
     #[derive(Serialize)]
     struct DeletedResult {
         deleted_translations: usize,
-    };
+    }
 
     let payload = DeletedResult {
         deleted_translations: deleted,
     };
 
-    Ok(web::Json(payload).with_status(match deleted {
+    Ok(web::Json(payload).customize().with_status(match deleted {
         0 => StatusCode::NOT_FOUND,
         _ => StatusCode::OK,
     }))

@@ -12,27 +12,27 @@ mod tests {
 
     #[actix_rt::test]
     async fn test_index() {
-        let (response, result) = get("/api/v1/", valid_token()).await;
+        let response = get("/api/v1/", valid_token()).await;
 
         assert_eq!(StatusCode::OK, response.status());
-        assert_eq!(result, "Welcome to Metaphrase API!");
+        assert_eq!("Welcome to Metaphrase API!", body_as_string(response).await);
     }
 
     #[actix_rt::test]
     async fn test_index_without_token() {
-        let (response, result) = get("/api/v1", None).await;
+        let response = get("/api/v1", None).await;
 
         assert_eq!(StatusCode::UNAUTHORIZED, response.status());
-        assert_eq!(result, "");
+        assert_eq!("", body_as_string(response).await);
     }
 
     #[actix_rt::test]
     async fn test_index_with_a_bad_token() {
         let badtoken = "badtoken".to_string();
-        let (response, result) = get("/api/v1", Some(badtoken)).await;
+        let response = get("/api/v1", Some(badtoken)).await;
 
         assert_eq!(StatusCode::UNAUTHORIZED, response.status());
-        assert_eq!(result, "");
+        assert_eq!("", body_as_string(response).await);
     }
 
     /*#[test]

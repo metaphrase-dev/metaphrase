@@ -5,7 +5,7 @@ mod tests {
     use actix_web::{dev::ServiceResponse, http::StatusCode};
 
     use serde_json;
-    use time::{OffsetDateTime, PrimitiveDateTime};
+    use time::{format_description::well_known, OffsetDateTime, PrimitiveDateTime};
 
     #[derive(Serialize)]
     struct LoginParams {
@@ -22,10 +22,9 @@ mod tests {
 
     #[actix_rt::test]
     async fn test_login_without_body() {
-        let (response, content) = post("/api/v1/login", None, None).await;
+        let response = post("/api/v1/login", None, None).await;
 
         assert_eq!(StatusCode::BAD_REQUEST, response.status());
-        assert_eq!("", content)
     }
 
     #[actix_rt::test]
@@ -35,7 +34,7 @@ mod tests {
             password: Some("testpassword"),
         };
 
-        let (response, _) = login(&login_params).await;
+        let response = login(&login_params).await;
 
         assert_eq!(StatusCode::BAD_REQUEST, response.status());
     }
@@ -47,7 +46,7 @@ mod tests {
             password: None,
         };
 
-        let (response, _) = login(&login_params).await;
+        let response = login(&login_params).await;
 
         assert_eq!(StatusCode::BAD_REQUEST, response.status());
     }
@@ -59,7 +58,7 @@ mod tests {
             password: Some("wrongpassword"),
         };
 
-        let (response, _) = login(&login_params).await;
+        let response = login(&login_params).await;
 
         assert_eq!(StatusCode::UNAUTHORIZED, response.status());
     }
@@ -73,40 +72,41 @@ mod tests {
             password: Some("testpassword"),
         };
 
-        let (response, content) = login(&login_params).await;
+        let response = login(&login_params).await;
 
         assert_eq!(StatusCode::CREATED, response.status());
 
-        let session: Session = serde_json::from_str(&content).unwrap();
+        let session: Session = serde_json::from_str(&body_as_string(response).await).unwrap();
 
         assert_eq!(64, session.token.len());
         assert_eq!(1, session.user_id);
 
         let expired_at: PrimitiveDateTime =
-            time::parse(session.expired_at.as_str(), "%F %T").unwrap();
+            time::PrimitiveDateTime::parse(session.expired_at.as_str(), &well_known::Rfc3339)
+                .unwrap();
         assert!(expired_at.assume_utc() > OffsetDateTime::now_utc());
 
-        let (response, content) = post("/api/v1/logout", None, Some(session.token.clone())).await;
+        let response = post("/api/v1/logout", None, Some(session.token.clone())).await;
 
         assert_eq!(StatusCode::NO_CONTENT, response.status());
-        assert_eq!("", content);
+        assert_eq!("", body_as_string(response).await);
 
         // We check that we are disconnected
-        let (response, content) = post("/api/v1/logout", None, Some(session.token)).await;
+        let response = post("/api/v1/logout", None, Some(session.token)).await;
 
         assert_eq!(StatusCode::UNAUTHORIZED, response.status());
-        assert_eq!("", content);
+        assert_eq!("", body_as_string(response).await);
     }
 
     #[actix_rt::test]
     async fn test_logout_without_token() {
-        let (response, content) = post("/api/v1/logout", None, None).await;
+        let response = post("/api/v1/logout", None, None).await;
 
         assert_eq!(StatusCode::UNAUTHORIZED, response.status());
-        assert_eq!("", content);
+        assert_eq!("", body_as_string(response).await);
     }
 
-    async fn login(params: &LoginParams) -> (ServiceResponse, String) {
+    async fn login(params: &LoginParams) -> ServiceResponse {
         let body = serde_json::to_string(&params).unwrap();
 
         post("/api/v1/login", Some(body), None).await

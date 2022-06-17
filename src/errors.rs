@@ -4,7 +4,6 @@ use diesel::ConnectionError as DieselConnectionError;
 use std::error::Error;
 use std::fmt;
 use std::string::FromUtf8Error;
-use time::ParseError;
 
 #[derive(Debug)]
 pub enum MetaphraseError {
@@ -76,8 +75,8 @@ impl From<FromUtf8Error> for MetaphraseError {
     }
 }
 
-impl From<ParseError> for MetaphraseError {
-    fn from(_: ParseError) -> MetaphraseError {
+impl From<time::error::Parse> for MetaphraseError {
+    fn from(_: time::error::Parse) -> MetaphraseError {
         MetaphraseError::ParseFailed("Parse error".to_string())
     }
 }
