@@ -26,6 +26,7 @@ mod tests {
         pub end: usize,
     }
 
+    #[allow(dead_code)]
     #[derive(Clone, Deserialize)]
     struct TranslationForLocale {
         id: i32,

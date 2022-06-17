@@ -176,7 +176,7 @@ pub async fn delete(params: web::Path<DeleteUrlParams>) -> Result<impl Responder
     #[derive(Serialize)]
     struct DeletedResult {
         deleted_translations: usize,
-    };
+    }
 
     let payload = DeletedResult {
         deleted_translations: deleted,

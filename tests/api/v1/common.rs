@@ -19,12 +19,12 @@ impl BodyTest for ResponseBody<Body> {
             ResponseBody::Body(ref b) => match b {
                 Body::Bytes(ref by) => std::str::from_utf8(&by).unwrap(),
                 Body::Empty => "",
-                _ => panic!(format!("can't read the body?? {:#?}", b)),
+                _ => panic!("can't read the body?? {:#?}", b),
             },
             ResponseBody::Other(ref b) => match b {
                 Body::Bytes(ref by) => std::str::from_utf8(&by).unwrap(),
                 Body::Empty => "",
-                _ => panic!(format!("can't read the body?? {:#?}", b)),
+                _ => panic!("can't read the body?? {:#?}", b),
             },
         }
     }
