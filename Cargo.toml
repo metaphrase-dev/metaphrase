@@ -5,7 +5,7 @@ authors = ["Raphaël Lustin <raphael@lustin.fr>", "Stanislas Signoud <signez@sta
 edition = "2018"
 
 [dependencies]
-diesel = { version = "1.4", features = ["sqlite"] }
+diesel = { version = "2.2", features = ["sqlite"] }
 log = "0.4"
 pwhash = "1.0"
 rand = "0.8"
